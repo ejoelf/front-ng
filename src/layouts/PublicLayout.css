@@ -1,0 +1,14 @@
+.pubShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pubMain {
+  flex: 1;
+}
+
+/* ✅ mismo alto que tu navbar */
+.pubNavSpacer {
+  height: 72px;
+}

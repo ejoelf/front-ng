@@ -1,0 +1,279 @@
+/* =========================
+   SETTINGS (PRO)
+   ========================= */
+
+.settings h1 {
+  margin: 0;
+}
+
+.settings .muted {
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 14px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.tabBtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabBtn.active {
+  color: var(--text);
+  border-color: rgba(110, 231, 255, 0.35);
+  background: rgba(110, 231, 255, 0.10);
+}
+
+/* Panel */
+.panel {
+  padding: 14px;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panelTitle {
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.panelHeaderActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Row card */
+.rowInner {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.rowInner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(800px 200px at 0% 0%, rgba(110,231,255,0.06), transparent 60%);
+  opacity: 0.6;
+}
+
+.rowMain {
+  min-width: 260px;
+  position: relative;
+  z-index: 1;
+}
+
+.rowTitle {
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.rowActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+/* Forms */
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.miniTitle {
+  font-weight: 900;
+  margin-top: 2px;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* SelectField */
+.selectField {
+  display: grid;
+  gap: 8px;
+}
+
+.selectField .label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.selectField .hint {
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.9;
+  margin-top: -2px;
+}
+
+/* ✅ FIX select: fondo oscuro + opciones visibles */
+select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+  appearance: none;
+}
+
+/* IMPORTANT: muchos navegadores usan el estilo del <option> propio.
+   Esto ayuda a que no sea todo blanco. */
+select option {
+  background: #11131a;
+  color: #e8e8ea;
+}
+
+/* Chips */
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.chip.active {
+  color: var(--text);
+  border-color: rgba(110, 231, 255, 0.35);
+  background: rgba(110, 231, 255, 0.10);
+}
+
+/* Textareas SOLO dentro de Settings */
+.settings textarea {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Separador */
+.settings .hr {
+  height: 1px;
+  background: var(--border);
+  border: 0;
+  margin: 14px 0;
+}
+
+/* =========================
+   Botones internos PRO (Confirm / Info)
+   ========================= */
+
+.setBtn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.setBtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.setBtn.primary {
+  border-color: rgba(110, 231, 255, 0.35);
+  background: rgba(110, 231, 255, 0.10);
+}
+
+.setBtn.primary:hover {
+  background: rgba(110, 231, 255, 0.14);
+}
+
+.setBtn.danger {
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.10);
+}
+
+.setBtn.danger:hover {
+  background: rgba(255, 107, 107, 0.14);
+}
+
+.setBtn.ghost {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+/* =========================
+   Responsive
+   ========================= */
+@media (max-width: 900px) {
+  .twoCols {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,18 @@
+.btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn-primary {
+  border-color: rgba(110,231,255,0.35);
+  background: rgba(110,231,255,0.10);
+}
+
+.btn-danger {
+  border-color: rgba(255,107,107,0.35);
+  background: rgba(255,107,107,0.10);
+}

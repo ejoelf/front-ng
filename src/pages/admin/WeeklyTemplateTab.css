@@ -1,0 +1,62 @@
+/* WeeklyTemplateTab.css */
+
+.wt {
+  display: grid;
+  gap: 12px;
+}
+
+.wtHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wtHeader h2 {
+  margin: 0;
+}
+
+.wtCard {
+  padding: 14px;
+}
+
+.wtHint {
+  margin-top: 6px;
+  line-height: 1.55;
+}
+
+.wtGrid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.wtGrid .wide {
+  grid-column: 1 / -1;
+}
+
+.wtActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.wtActions .dangerHint {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .wtGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .wtActions {
+    justify-content: center;
+  }
+}

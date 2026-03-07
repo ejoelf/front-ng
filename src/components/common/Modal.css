@@ -1,0 +1,69 @@
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78); /* ✅ más oscuro */
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 50;
+}
+
+/* ✅ ahora el scroll va acá, porque es el contenedor real del modal */
+.modalCard {
+  width: min(680px, 100%);
+  padding: 14px;
+
+  max-height: min(82vh, 760px); /* ✅ limita altura */
+  overflow: auto;               /* ✅ scroll interno */
+}
+
+/* Scrollbar prolija */
+.modalCard::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modalCard::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.modalCard::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  position: sticky; /* ✅ header fijo mientras scrolleás */
+  top: 0;
+  padding: 6px 0;
+  background: rgba(0, 0, 0, 0.25); /* ✅ para que no se mezcle con el texto */
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 2;
+}
+
+.modalTitle {
+  font-weight: 900;
+}
+
+.modalClose {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.modalBody {
+  margin-top: 12px;
+}

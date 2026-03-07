@@ -1,0 +1,192 @@
+.adminShell{
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  min-height: 100vh;
+}
+
+.adminSidebar{
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 16px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: width 220ms ease, transform 220ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ===== Brand ===== */
+.adminBrandTop{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminBrandLeft{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.adminBrandText{ min-width: 0; }
+.adminBrandTitle{ font-weight: 900; font-size: 18px; line-height: 1.1; }
+.adminBrandSub{ color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+/* colapsar */
+.adminCollapseBtn{
+  height: 36px;
+  width: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.adminCollapseBtn:hover{ background: rgba(255,255,255,0.06); }
+
+/* ===== Nav ===== */
+.adminNav{
+  display: grid;
+  gap: 8px;
+}
+
+.adminNav a{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.adminNav a:hover{
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+
+.adminNav a.active{
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.10);
+  color: var(--text);
+}
+
+.navIcon{
+  width: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex: 0 0 auto;
+}
+
+.navLabel{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Logout ===== */
+.adminLogout{
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+}
+.adminLogout:hover{ background: rgba(255,255,255,0.06); }
+
+/* ===== Main ===== */
+.adminMain{ padding: 18px; }
+
+/* Topbar mobile */
+.adminTopbar{ display: none; margin-bottom: 10px; }
+.adminMobileMenuBtn{
+  height: 38px;
+  min-width: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ===== Collapsed (desktop) ===== */
+.adminShell.isCollapsed{
+  grid-template-columns: 82px 1fr;
+}
+
+.adminShell.isCollapsed .adminSidebar{
+  padding: 14px 10px;
+}
+
+.adminShell.isCollapsed .adminBrandText{
+  display: none; /* ✅ no queda texto cortado */
+}
+
+.adminShell.isCollapsed .adminNav a{
+  justify-content: center;
+  padding: 11px 10px;
+}
+
+.adminShell.isCollapsed .navLabel{
+  display: none; /* ✅ no queda texto cortado */
+}
+
+.adminShell.isCollapsed .adminLogout{
+  justify-content: center;
+}
+
+.adminShell.isCollapsed .adminCollapseBtn{
+  margin-left: auto;
+}
+
+/* ===== Mobile ===== */
+.adminOverlay{ display: none; }
+
+@media (max-width: 900px){
+  .adminShell{ grid-template-columns: 1fr; }
+  .adminTopbar{ display: flex; }
+
+  .adminSidebar{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 270px;
+    transform: translateX(-110%);
+    z-index: 40;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+
+  .adminShell.isMobileOpen .adminSidebar{
+    transform: translateX(0);
+  }
+
+  .adminOverlay{
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(0,0,0,0.45);
+    border: 0;
+  }
+
+  .adminShell.isMobileOpen .adminOverlay{ display: block; }
+
+  /* en mobile ignoramos colapsado mini */
+  .adminShell.isCollapsed{ grid-template-columns: 1fr; }
+}

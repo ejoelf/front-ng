@@ -1,0 +1,72 @@
+.rb {
+  display: grid;
+  gap: 12px;
+}
+
+.rbHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rbHeader h2 {
+  margin: 0;
+}
+
+.rbCard {
+  padding: 12px;
+  margin-top: 0;
+}
+
+.rbGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.rbGrid .wide {
+  grid-column: 1 / -1;
+}
+
+.rbActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.rbList {
+  margin-top: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.rbItem {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rbItemMain {
+  min-width: 240px;
+}
+
+.rbEmpty {
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .rbGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rbActions {
+    justify-content: center;
+  }
+}

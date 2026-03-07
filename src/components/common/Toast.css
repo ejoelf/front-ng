@@ -1,0 +1,50 @@
+.toastWrap {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 10px;
+  z-index: 9999;
+  width: min(420px, calc(100vw - 32px));
+}
+
+.toastItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(15,17,22,0.88);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+}
+
+.toastTitle {
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+
+.toastMsg {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.toastClose {
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.toastClose:hover { background: rgba(255,255,255,0.06); }
+
+/* tipos */
+.toast-info { border-color: rgba(255,255,255,0.12); }
+.toast-success { border-color: rgba(110,231,255,0.35); }
+.toast-error { border-color: rgba(255,107,107,0.35); }
+.toast-warning { border-color: rgba(255,191,107,0.35); }

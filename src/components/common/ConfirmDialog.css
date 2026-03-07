@@ -1,0 +1,17 @@
+.confirmBox {
+  display: grid;
+  gap: 14px;
+}
+
+.confirmMsg {
+  color: var(--text);
+  opacity: 0.95;
+  line-height: 1.45;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}

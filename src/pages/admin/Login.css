@@ -1,0 +1,120 @@
+.loginWrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+
+.loginCard {
+  width: min(460px, 100%);
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(900px 360px at 15% 10%, rgba(110,231,255,0.10), transparent 60%),
+    rgba(255,255,255,0.04);
+  box-shadow: 0 22px 70px rgba(0,0,0,0.35);
+}
+
+.loginTop {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.loginCard h2 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.4px;
+}
+
+.loginSub {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.loginHint {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  margin-left: 6px;
+}
+
+.loginFields {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+/* ✅ input password con icono dentro */
+.inputIconWrap {
+  position: relative;
+}
+
+/* deja lugar al ojito dentro del input */
+.inputIconWrap input {
+  padding-right: 56px !important;
+}
+
+/* ✅ el ojito queda PERFECTO adentro del input */
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+
+  /* clave: anclamos al borde inferior del input, no al top del contenedor */
+  bottom: 0px;
+
+  width: 42px;
+  height: 36px;
+
+  border: none;
+
+  background: transparent;
+  color: var(--text);
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+  z-index: 2;
+}
+
+.eyeBtn:hover {
+  background: rgba(255,255,255,0.08);
+  border-radius: 50px;
+}
+
+
+/* error box */
+.loginError {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,107,107,0.35);
+  background: rgba(255,107,107,0.10);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.loginErrorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 4px;
+  background: rgba(255,107,107,0.95);
+  box-shadow: 0 0 0 3px rgba(255,107,107,0.18);
+}
+
+.loginActions {
+  display: grid;
+  gap: 10px;
+}
+
+.loginFoot {
+  font-size: 12px;
+  opacity: 0.9;
+}

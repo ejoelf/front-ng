@@ -1,0 +1,213 @@
+/* ServicesSection.css */
+
+.svc {
+  padding: 44px 0;
+  background: rgba(255,255,255,0.02);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.svcInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 18px;
+  width: 100%;
+}
+
+/* ✅ HEADER centrado (como al principio) */
+.svcHeader {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.svcHeader h2 {
+  margin: 0;
+  font-size: 40px;
+  letter-spacing: -0.2px;
+}
+
+.svcSubtitle {
+  margin: 10px auto 0;
+  max-width: 820px;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+/* ===================== GRID (<= 3) ===================== */
+
+.svcGrid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  align-items: start;
+}
+
+/* si hay solo 1 o 2 servicios, que no se estire feo */
+@media (min-width: 900px) {
+  .svcGrid {
+    justify-content: center;
+  }
+}
+
+/* ===================== CAROUSEL (>= 4) ===================== */
+
+.svcCarousel {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 6px 2px 14px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.svcCarousel::-webkit-scrollbar {
+  height: 10px;
+}
+.svcCarousel::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+.svcCarousel::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+}
+
+/* ===================== CARD ===================== */
+
+.svcCard {
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.28);
+}
+
+/* ✅ en carrusel: ancho fijo para que sea realmente horizontal */
+.svcCarousel .svcCard {
+  flex: 0 0 320px;
+  scroll-snap-align: start;
+}
+
+/* ===================== IMAGE + PRICE TAG ===================== */
+
+.svcImg {
+  height: 310px;
+  background-size: cover;
+  background-position: center 70%;
+  background-color: rgba(0,0,0,0.35);
+  display: grid;
+  place-items: center;
+  position: relative; /* ✅ para la pill de precio */
+}
+
+/* fallback */
+.svcImgFallback {
+  color: rgba(255,255,255,0.75);
+  font-weight: 900;
+  font-size: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(10,12,14,0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ✅ precio arriba a la derecha */
+.svcPriceTag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 950;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+
+  color: rgba(255,255,255,0.92);
+  background: rgba(10,12,14,0.35);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-shadow: 0 6px 18px rgba(0,0,0,0.55);
+}
+
+/* ===================== BODY ===================== */
+
+.svcBody {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+
+  background: rgba(10,12,14,0.22);
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+
+.svcTitle {
+  font-weight: 950;
+  letter-spacing: 0.6px;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.55);
+}
+
+/* Empty state */
+.svcEmpty {
+  color: var(--muted);
+  padding: 18px;
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-radius: 16px;
+  text-align: center;
+}
+
+/* CTA */
+.svcActions {
+  margin-top: 22px;
+  display: flex;
+  justify-content: center;
+}
+
+.svcBtn {
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-weight: 900;
+}
+
+.svcBtn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* ===================== RESPONSIVE ===================== */
+
+@media (max-width: 1180px) {
+  .svcGrid {
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+  .svcImg {
+    height: 320px;
+  }
+}
+
+@media (max-width: 620px) {
+  .svc {
+    padding: 36px 0;
+  }
+  .svcHeader h2 {
+    font-size: 32px;
+  }
+  .svcGrid {
+    grid-template-columns: 1fr;
+  }
+  .svcCarousel .svcCard {
+    flex-basis: 82%;
+  }
+  .svcImg {
+    height: 320px;
+  }
+}

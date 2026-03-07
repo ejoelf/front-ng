@@ -1,0 +1,11 @@
+.field { display: grid; gap: 8px; }
+.fieldLabel { font-size: 12px; color: var(--muted); }
+.fieldInput {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  outline: none;
+}
+.fieldInput:focus { border-color: rgba(110,231,255,0.45); }

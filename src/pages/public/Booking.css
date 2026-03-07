@@ -1,0 +1,190 @@
+/* src/pages/Booking/Booking.css */
+
+.booking { padding: 18px; }
+.booking h2 { margin: 0 0 6px; }
+
+.bookingTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.bookingGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.selectField { display: grid; gap: 8px; }
+.selectField .label { font-size: 12px; color: var(--muted); }
+
+select, textarea {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  outline: none;
+}
+
+textarea { min-height: 90px; resize: vertical; }
+
+.wide { grid-column: 1 / -1; }
+
+.bookingActions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =======================
+   Slots (más compactos)
+   ======================= */
+
+.slotBox { display: grid; gap: 8px; }
+
+.slotBoxError .label{
+  color: rgba(255,107,107,0.95);
+}
+
+.slotBoxError .slotGrid{
+  outline: 1px solid rgba(255,107,107,0.28);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.slotGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.slotBtn {
+  padding: 8px 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 700;
+}
+
+.slotBtn:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.slotBtn.active {
+  border-color: rgba(110,231,255,0.45);
+  background: rgba(110,231,255,0.12);
+}
+
+.slotEmpty {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+}
+
+/* =======================
+   Pantalla OK PRO
+   ======================= */
+
+.bookingDoneWrap{
+  min-height: calc(100vh - 140px);
+  display:grid;
+  place-items:center;
+  padding: 18px;
+}
+
+.bookingDoneCard{
+  width: min(760px, 100%);
+  padding: 22px;
+  text-align:center;
+}
+
+.bookingDoneIcon{
+  width: 74px;
+  height: 74px;
+  border-radius: 20px;
+  display:grid;
+  place-items:center;
+  margin: 0 auto 12px;
+  font-size: 42px;
+  font-weight: 950;
+  color: rgba(20, 20, 20, 0.95);
+  background: rgba(110,231,255,0.9);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.35);
+}
+
+.bookingDoneTitle{
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: -0.4px;
+}
+
+.bookingDoneSub{
+  margin: 8px 0 0;
+}
+
+.bookingDoneInfo{
+  margin-top: 14px;
+  text-align:left;
+  display:grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+}
+
+.bookingDoneInfo span{
+  color: var(--muted);
+  display:inline-block;
+  min-width: 90px;
+}
+
+.bookingDoneActions{
+  margin-top: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bookingDoneLink {
+  background: none;
+  border: none;
+  padding: 0;
+
+  color: var(--primary);
+  font-weight: 800;
+  cursor: pointer;
+
+  text-decoration: none;
+}
+
+.bookingDoneLink:hover {
+  text-decoration: underline;
+}
+
+.bookingDoneLink:focus {
+  outline: none;
+}
+
+.bookingDoneLink:active {
+  transform: translateY(1px);
+}
+
+
+/* responsive */
+@media (max-width: 900px) {
+  .bookingGrid { grid-template-columns: 1fr; }
+  .slotGrid { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); }
+  .bookingDoneTitle{ font-size: 28px; }
+}

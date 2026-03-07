@@ -1,0 +1,52 @@
+.nfWrap {
+  min-height: calc(100vh - 90px);
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+
+.nf {
+  width: min(520px, 100%);
+  padding: 22px;
+  text-align: center;
+}
+
+.nfCode {
+  font-size: 56px;
+  font-weight: 950;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+  opacity: 0.95;
+}
+
+.nfTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.nfText {
+  margin: 10px auto 0;
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+.nfActions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.nfBtn {
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-weight: 900;
+}
+
+.nfBtn:hover {
+  background: rgba(255,255,255,0.08);
+}

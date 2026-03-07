@@ -1,0 +1,112 @@
+.exportsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.exportsCard {
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.exportsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ✅ Nuevo: error de rango */
+.exportsError {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.10);
+  color: rgba(255, 220, 220, 0.95);
+  font-size: 12px;
+}
+
+.exportsActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exportsPreview {
+  margin-top: 12px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.02);
+}
+
+/* Compat: si la tabla viene con className="exportsTable" */
+.exportsTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+/* Default: tablas dentro del preview */
+.exportsPreview table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.exportsPreview th,
+.exportsPreview td,
+.exportsTable th,
+.exportsTable td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.exportsSectionTitle {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.exportsSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sumBox {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.sumLabel {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sumValue {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .exportsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .exportsSummary {
+    grid-template-columns: 1fr;
+  }
+}

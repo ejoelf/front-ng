@@ -1,0 +1,627 @@
+/* src/pages/Calendar/Calendar.css */
+
+/* =========================
+   HEADER + CONTROLES
+   ========================= */
+
+.calHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.calHeader h1 {
+  margin: 0;
+}
+
+.calControls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+/* ====== Controles ====== */
+.calCtrl {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.calCtrl input,
+.calCtrl select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+  color-scheme: dark;
+}
+
+.calCtrl select option {
+  background: #0b0c10;
+  color: var(--text);
+}
+
+/* ✅ botón Nuevo */
+.calNewWrap {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* =========================
+   SECCIONES (mañana / tarde)
+   ========================= */
+
+.calSections {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  /* tooltip position anchor */
+  position: relative;
+}
+
+.calSection {
+  padding: 14px;
+
+  /* ✅ tick height (set desde JSX por --tickPx) */
+  --tickPx: 36px;
+}
+
+.calSectionTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.calSectionTitle {
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+/* =========================
+   TIMELINE
+   ========================= */
+
+.calTimeline {
+  display: grid;
+  grid-template-columns: 78px 1fr; /* col horas + contenido */
+  gap: 10px;
+}
+
+/* Columna horas */
+.calTimes {
+  display: grid;
+  gap: 0; /* ✅ importante: nada de gaps */
+  padding-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.calTimeTick {
+  height: var(--tickPx);
+  display: flex;
+  align-items: flex-start;
+}
+
+/* spacer para alinear horas con el header del staff cuando estás en "Todos" */
+.calLaneHeaderSpacer {
+  height: 44px;
+}
+
+/* =========================
+   BLOQUES / GRILLA
+   ========================= */
+
+/* Columna bloques (modo 1 staff) */
+.calBlocks {
+  position: relative;
+  border-left: 1px solid var(--border);
+  padding-left: 10px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ✅ Grid: líneas cada viewStepMin => var(--tickPx) */
+.calGridBg {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.06) 0px,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px,
+    transparent var(--tickPx)
+  );
+}
+
+/* =========================
+   LÍNEA HORA ACTUAL (ROJA)
+   ========================= */
+
+.calNowLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 70, 70, 0.85);
+  box-shadow: 0 0 14px rgba(255, 70, 70, 0.25);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.calNowDot {
+  position: absolute;
+  left: 6px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 70, 70, 0.95);
+  box-shadow: 0 0 12px rgba(255, 70, 70, 0.35);
+}
+
+.calNowBubble {
+  position: absolute;
+  left: 22px;
+  top: -14px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(255, 70, 70, 0.18);
+  border: 1px solid rgba(255, 70, 70, 0.35);
+  color: var(--text);
+  backdrop-filter: blur(6px);
+}
+
+/* =========================
+   SLOTS CLICKEABLES (ESPACIO LIBRE)
+   ========================= */
+
+/* Capa transparente arriba del fondo, abajo de los turnos */
+.calSlotsLayer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none; /* la capa en sí no recibe, los botones sí */
+}
+
+.calSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+
+  pointer-events: auto;
+  border-radius: 10px;
+}
+
+/* slot libre (hover sutil, como “Agenda Pro”) */
+.calSlot.free:hover {
+  background: rgba(110, 231, 255, 0.06);
+  outline: 1px dashed rgba(110, 231, 255, 0.18);
+}
+
+/* slot ocupado, no interactivo */
+.calSlot.busy {
+  cursor: default;
+}
+
+/* =========================
+   MODO TODOS (una columna por staff)
+   ========================= */
+
+.calBlocksMulti {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 10px;
+  overflow-x: hidden;
+  padding-bottom: 0;
+}
+
+.calLane {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+
+.calLaneHeader {
+  height: 44px;
+  padding: 10px 12px;
+  font-weight: 800;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+}
+
+.calLaneBody {
+  position: relative;
+  padding: 10px 0;
+}
+
+.calLaneEmpty {
+  color: var(--muted);
+  font-size: 12px;
+  padding: 12px;
+  opacity: 0.8;
+}
+
+/* =========================
+   TURNOS (BLOQUES)
+   ========================= */
+
+.calBlock {
+  position: absolute;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(110, 231, 255, 0.25);
+  background: rgba(110, 231, 255, 0.10);
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  z-index: 5;
+
+  display: flex;
+  align-items: center;
+}
+
+.calBlock:hover {
+  background: rgba(110, 231, 255, 0.14);
+}
+
+/* ✅ texto 1 sola línea: SERVICIO - NOMBRE - 00:00hs */
+.calBlockLine {
+  width: 100%;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calBlockSep {
+  margin: 0 6px;
+  color: var(--muted);
+}
+
+/* por si quedó algún estilo viejo */
+.calBlockTop,
+.calBlockBottom,
+.calPill,
+.calStatusPill,
+.calBlockSub {
+  display: none !important;
+}
+
+/* ====== Estados ====== */
+.status-confirmed {
+  border-color: rgba(110, 231, 255, 0.35);
+  background: rgba(110, 231, 255, 0.12);
+}
+
+.status-rescheduled {
+  border-color: rgba(255, 184, 120, 0.40);
+  background: rgba(255, 184, 120, 0.14);
+}
+
+.status-cancelled {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  opacity: 0.7;
+}
+
+.status-no-show {
+  border-color: rgba(255, 107, 107, 0.38);
+  background: rgba(255, 107, 107, 0.14);
+}
+
+.status-completed {
+  border-color: rgba(106, 255, 167, 0.40);
+  background: rgba(106, 255, 167, 0.14);
+}
+
+/* ====== Vacío ====== */
+.calEmpty {
+  color: var(--muted);
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  margin: 10px;
+}
+
+/* =========================
+   TOOLTIP (hover)
+   ========================= */
+
+.calTip {
+  position: fixed;
+  z-index: 9999;
+  width: 320px;
+  max-width: calc(100vw - 20px);
+
+  background: rgba(10, 12, 16, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 10px 12px;
+
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.calTipTitle {
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.calTipRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 2px 0;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.calTipRow span {
+  color: var(--muted);
+}
+
+/* =========================
+   MODAL / ACCIONES
+   ========================= */
+
+.apptActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.payGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.apptHint {
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.apptFlag {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* =========================
+   SLOTS (reprogramar)
+   ========================= */
+
+.slotGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.slotBtn {
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.slotBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.slotBtn.active {
+  border-color: rgba(110, 231, 255, 0.35);
+  background: rgba(110, 231, 255, 0.12);
+}
+
+.slotEmpty {
+  color: var(--muted);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* =========================
+   MODAL NUEVO TURNO
+   ========================= */
+
+.newApptGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.newApptWide {
+  grid-column: 1 / -1;
+}
+
+.newApptOver {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+}
+
+.newApptOver input {
+  width: 18px;
+  height: 18px;
+}
+
+/* autocomplete */
+.newApptSuggestLabel {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.newApptSuggestWrap {
+  position: relative;
+}
+
+.newApptSuggestInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+}
+
+.newApptSuggestList {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 12, 16, 0.96);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.newApptSuggestItem {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.newApptSuggestItem:hover {
+  background: rgba(110, 231, 255, 0.08);
+}
+
+.sugName {
+  font-weight: 900;
+}
+
+.sugMeta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* textarea del modal */
+.selectField textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+}
+
+/* =========================
+   SELECT oscuro (modal Cobrar y Nuevo turno)
+   ========================= */
+
+.selectField select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  outline: none;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 55%,
+    calc(100% - 12px) 55%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+.selectField select:focus {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
+.selectField select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.selectField select option,
+.selectField select optgroup {
+  background: #0b0c10;
+  color: var(--text);
+}
+
+/* Si tu sistema usa también .calCtrl select en otros lados */
+.calCtrl select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 900px) {
+  .calSections {
+    grid-template-columns: 1fr;
+  }
+
+  .payGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .slotGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .newApptGrid {
+    grid-template-columns: 1fr;
+  }
+
+  /* si en mobile se te hace muy apretado, permitimos scroll */
+  .calBlocksMulti {
+    overflow-x: auto;
+  }
+}

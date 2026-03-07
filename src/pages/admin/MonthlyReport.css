@@ -1,0 +1,129 @@
+.monthlyHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.monthlyHeader h1 {
+  margin: 0;
+}
+
+.monthlyControls {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.monthlyCtrl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.monthlyCtrl span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ✅ input month con estilo consistente */
+.monthlyCtrl input[type="month"] {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+  min-width: 180px;
+}
+
+.monthlyCtrl input[type="month"]:focus {
+  border-color: rgba(110, 231, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
+.monthlyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.monthlyCard {
+  padding: 12px;
+  min-height: 92px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.monthlyLabel {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.monthlyValue {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 0;
+}
+
+.monthlyTableCard {
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.monthlySectionTitle {
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+/* ✅ tablas más prolijas */
+.monthlyTable {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.monthlyTable thead th {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.monthlyTable th,
+.monthlyTable td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.monthlyTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.monthlyTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ✅ responsive */
+@media (max-width: 900px) {
+  .monthlyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .monthlyControls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .monthlyCtrl input[type="month"] {
+    width: 100%;
+    min-width: 0;
+  }
+}

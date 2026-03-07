@@ -1,0 +1,392 @@
+/* src/pages/Clients/Clients.css */
+
+.clients {
+  display: grid;
+  gap: 14px;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+
+.clientsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clientsHeader h1 {
+  margin: 0;
+}
+
+.clientsHeaderRight {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.clientsStat {
+  padding: 12px 14px;
+  border-radius: 14px;
+  min-width: 120px;
+}
+
+.clientsStatLabel {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.clientsStatValue {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.clientsSearch {
+  min-width: 260px;
+}
+
+.clientsNew {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* =========================
+   LISTA
+   ========================= */
+
+.clientsList {
+  display: grid;
+  gap: 10px;
+}
+
+.clientsEmpty {
+  padding: 14px;
+  color: var(--muted);
+}
+
+.clientRow {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: left;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.clientRow:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.clientLeft {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.clientAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(110, 231, 255, 0.22);
+  background: rgba(110, 231, 255, 0.08);
+  color: var(--text);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.clientAvatar.big {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  font-size: 18px;
+}
+
+.clientMain {
+  min-width: 0;
+}
+
+.clientName {
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clientMeta {
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.clientRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 120px;
+}
+
+.clientTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.clientTag {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.small {
+  font-size: 12px;
+}
+
+/* =========================
+   MODAL FICHA
+   ========================= */
+
+.clientModal {
+  display: grid;
+  gap: 12px;
+}
+
+.clientCardTop {
+  padding: 14px;
+  border-radius: 18px;
+}
+
+.clientCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clientCardInfo {
+  flex: 1;
+  min-width: 220px;
+}
+
+.clientCardName {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.clientCardActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.clientQuickBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 900;
+  text-decoration: none;
+
+  border: 1px solid rgba(110, 231, 255, 0.20);
+  background: rgba(110, 231, 255, 0.08);
+  color: var(--text);
+}
+
+.clientQuickBtn:hover {
+  background: rgba(110, 231, 255, 0.12);
+}
+
+.clientDangerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 900;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 107, 107, 0.30);
+  background: rgba(255, 107, 107, 0.08);
+  color: var(--text);
+}
+
+.clientDangerBtn:hover {
+  background: rgba(255, 107, 107, 0.12);
+}
+
+/* =========================
+   FORM GRID (edición)
+   ========================= */
+
+.clientEditGrid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ✅ estilo oscuro para inputs/textarea dentro de selectField */
+.selectField input,
+.selectField textarea,
+.selectField select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+
+  /* ✅ evita inputs blancos (incluye type="date") */
+  color-scheme: dark;
+}
+
+.selectField textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.selectField input:focus,
+.selectField textarea:focus,
+.selectField select:focus {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
+.selectField input:disabled,
+.selectField textarea:disabled,
+.selectField select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.selectField .label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.selectField .hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.clientSaveRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* =========================
+   HISTORIAL
+   ========================= */
+
+.clientHistTitle {
+  font-weight: 900;
+  margin-top: 4px;
+}
+
+.clientHist {
+  display: grid;
+  gap: 10px;
+}
+
+.histItem {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.histTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.histPayRow {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.histPayPill {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+/* ✅ colores por estado (match con tu estética) */
+.cash-pending,
+.cash-unpaid {
+  border-color: rgba(255, 184, 120, 0.35);
+  background: rgba(255, 184, 120, 0.10);
+}
+
+.cash-paid {
+  border-color: rgba(106, 255, 167, 0.35);
+  background: rgba(106, 255, 167, 0.10);
+}
+
+.cash-void {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  opacity: 0.85;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 900px) {
+  .clientsSearch {
+    min-width: 220px;
+  }
+
+  .clientEditGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .clientCardActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .histTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .histPayRow {
+    justify-content: flex-start;
+  }
+}
