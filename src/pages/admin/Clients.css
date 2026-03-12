@@ -243,7 +243,6 @@
   gap: 12px;
 }
 
-/* ✅ estilo oscuro para inputs/textarea dentro de selectField */
 .selectField input,
 .selectField textarea,
 .selectField select {
@@ -254,8 +253,6 @@
   background: rgba(255, 255, 255, 0.03);
   color: var(--text);
   outline: none;
-
-  /* ✅ evita inputs blancos (incluye type="date") */
   color-scheme: dark;
 }
 
@@ -316,6 +313,15 @@
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.histItem strong {
+  color: #ffffff;
+}
+
+.histItem .muted {
+  color: rgba(255, 255, 255, 0.78) !important;
 }
 
 .histTop {
@@ -345,7 +351,6 @@
   color: var(--text);
 }
 
-/* ✅ colores por estado (match con tu estética) */
 .cash-pending,
 .cash-unpaid {
   border-color: rgba(255, 184, 120, 0.35);

@@ -36,6 +36,20 @@ function normalizeCommaList(v) {
     .filter(Boolean);
 }
 
+function normalizeDisplayOrder(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+function nextDisplayOrder(list) {
+  if (!Array.isArray(list) || list.length === 0) return 1;
+  return (
+    Math.max(
+      ...list.map((item, index) => normalizeDisplayOrder(item?.displayOrder, index + 1))
+    ) + 1
+  );
+}
+
 function moneyARS(n) {
   return `$${Number(n || 0).toLocaleString("es-AR")}`;
 }
@@ -149,6 +163,7 @@ export default function Settings() {
       durationMin: Number(payload.durationMin || 30),
       price: Number(payload.price || 0),
       imageUrl: payload.imageUrl || "",
+      displayOrder: Number(payload.displayOrder || 0),
       allowedStaffIds: Array.isArray(payload.allowedStaffIds)
         ? payload.allowedStaffIds
         : [],
@@ -163,6 +178,7 @@ export default function Settings() {
       durationMin: Number(payload.durationMin),
       price: Number(payload.price),
       imageUrl: payload.imageUrl ?? "",
+      displayOrder: Number(payload.displayOrder || 0),
       allowedStaffIds: Array.isArray(payload.allowedStaffIds)
         ? payload.allowedStaffIds
         : [],
@@ -188,6 +204,7 @@ export default function Settings() {
       address: payload.address || null,
       bio: payload.bio || "",
       photoUrl: payload.photoUrl || "",
+      displayOrder: Number(payload.displayOrder || 0),
       skills: Array.isArray(payload.skills) ? payload.skills : [],
       scheduleOverride: payload.scheduleOverride ?? null,
     });
@@ -209,6 +226,7 @@ export default function Settings() {
       address: payload.address || null,
       bio: payload.bio || "",
       photoUrl: payload.photoUrl || "",
+      displayOrder: Number(payload.displayOrder || 0),
       skills: Array.isArray(payload.skills) ? payload.skills : [],
       scheduleOverride: payload.scheduleOverride ?? null,
     });
@@ -504,11 +522,12 @@ function ServicesTab({
       <div className="list">
         {services.length === 0 ? <div className="muted">No hay servicios.</div> : null}
 
-        {services.map((s) => (
+        {services.map((s, index) => (
           <ServiceRow
             key={s.id}
             service={s}
             staff={staff}
+            rowIndex={index}
             onRefresh={onRefresh}
             onToast={onToast}
             onConfirm={onConfirm}
@@ -522,6 +541,9 @@ function ServicesTab({
         <ServiceForm
           staff={staff}
           onToast={onToast}
+          initial={{
+            displayOrder: nextDisplayOrder(services),
+          }}
           onSubmit={async (payload) => {
             if (services.length >= MAX_SERVICES) {
               setOpen(false);
@@ -556,6 +578,7 @@ function ServicesTab({
 function ServiceRow({
   service,
   staff,
+  rowIndex,
   onRefresh,
   onToast,
   onConfirm,
@@ -563,6 +586,8 @@ function ServiceRow({
   apiDeleteService,
 }) {
   const [openEdit, setOpenEdit] = useState(false);
+
+  const currentOrder = normalizeDisplayOrder(service.displayOrder, rowIndex + 1);
 
   return (
     <div className="row card rowInner">
@@ -572,6 +597,8 @@ function ServiceRow({
         <div className="muted">
           {service.durationMin} min · {moneyARS(service.price)}
         </div>
+
+        <div className="muted small">Orden visual: {currentOrder}</div>
 
         <div className="muted small">
           Staff habilitado:{" "}
@@ -642,6 +669,7 @@ function ServiceRow({
             name: service.name ?? "",
             durationMin: service.durationMin ?? 30,
             price: service.price ?? 0,
+            displayOrder: currentOrder,
             allowedStaffIds: service.allowedStaffIds ?? [],
             imageUrl: service.imageUrl ?? "",
           }}
@@ -676,6 +704,7 @@ function ServiceForm({ staff, onSubmit, initial, onToast }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [durationMin, setDurationMin] = useState(initial?.durationMin ?? 30);
   const [price, setPrice] = useState(initial?.price ?? 0);
+  const [displayOrder, setDisplayOrder] = useState(initial?.displayOrder ?? 1);
 
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "");
   const [allowedStaffIds, setAllowedStaffIds] = useState(
@@ -735,6 +764,7 @@ function ServiceForm({ staff, onSubmit, initial, onToast }) {
           name: nm,
           durationMin,
           price,
+          displayOrder: normalizeDisplayOrder(displayOrder, 1),
           allowedStaffIds,
           imageUrl: safeTrim(imageUrl),
         });
@@ -757,6 +787,13 @@ function ServiceForm({ staff, onSubmit, initial, onToast }) {
         type="number"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
+      />
+      <Input
+        label="Orden visual"
+        type="number"
+        min="0"
+        value={displayOrder}
+        onChange={(e) => setDisplayOrder(e.target.value)}
       />
 
       <div className="selectField">
@@ -869,10 +906,11 @@ function StaffTab({
       <div className="list">
         {staff.length === 0 ? <div className="muted">No hay staff.</div> : null}
 
-        {staff.map((s) => (
+        {staff.map((s, index) => (
           <StaffRow
             key={s.id}
             staffMember={s}
+            rowIndex={index}
             onRefresh={onRefresh}
             onToast={onToast}
             onConfirm={onConfirm}
@@ -885,6 +923,9 @@ function StaffTab({
       <Modal open={open} title="Nuevo staff" onClose={() => setOpen(false)}>
         <StaffForm
           onToast={onToast}
+          initial={{
+            displayOrder: nextDisplayOrder(staff),
+          }}
           onSubmit={async (payload) => {
             if (staff.length >= MAX_STAFF) {
               setOpen(false);
@@ -917,6 +958,7 @@ function StaffTab({
 
 function StaffRow({
   staffMember,
+  rowIndex,
   onRefresh,
   onToast,
   onConfirm,
@@ -932,11 +974,17 @@ function StaffRow({
         )}`.trim()
       : staffMember.name;
 
+  const currentOrder = normalizeDisplayOrder(
+    staffMember.displayOrder,
+    rowIndex + 1
+  );
+
   return (
     <div className="row card rowInner">
       <div className="rowMain">
         <div className="rowTitle">{displayName || staffMember.name}</div>
 
+        <div className="muted small">Orden visual: {currentOrder}</div>
         <div className="muted small">
           Skills: {(staffMember.skills || []).join(", ") || "-"}
         </div>
@@ -1003,6 +1051,7 @@ function StaffRow({
             address: staffMember.address ?? "",
             bio: staffMember.bio ?? "",
             photoUrl: staffMember.photoUrl ?? "",
+            displayOrder: currentOrder,
             skillsText: (staffMember.skills || []).join(", "),
             scheduleOverride: staffMember.scheduleOverride ?? null,
           }}
@@ -1043,6 +1092,7 @@ function StaffForm({ onSubmit, initial, onToast }) {
 
   const [bio, setBio] = useState(initial?.bio ?? "");
   const [photoUrl, setPhotoUrl] = useState(initial?.photoUrl ?? "");
+  const [displayOrder, setDisplayOrder] = useState(initial?.displayOrder ?? 1);
   const [skillsText, setSkillsText] = useState(initial?.skillsText ?? "");
 
   const [useOverride, setUseOverride] = useState(
@@ -1168,6 +1218,7 @@ function StaffForm({ onSubmit, initial, onToast }) {
           address: safeTrim(address),
           bio: safeTrim(bio),
           photoUrl: safeTrim(photoUrl),
+          displayOrder: normalizeDisplayOrder(displayOrder, 1),
           skills,
           scheduleOverride,
         });
@@ -1226,6 +1277,14 @@ function StaffForm({ onSubmit, initial, onToast }) {
         value={address}
         onChange={(e) => setAddress(e.target.value)}
         placeholder="Barrio / Calle..."
+      />
+
+      <Input
+        label="Orden visual"
+        type="number"
+        min="0"
+        value={displayOrder}
+        onChange={(e) => setDisplayOrder(e.target.value)}
       />
 
       <hr className="hr" />

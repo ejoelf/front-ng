@@ -67,12 +67,21 @@ function getFinal(i) {
   return Number(v || 0);
 }
 
+function getStaffLabel(i) {
+  return i?.staffName || "—";
+}
+
+function getTimeLabel(i) {
+  return i?.appointmentTime || "—";
+}
+
 export default function Cashbox() {
   const { show } = useToast();
 
   const [date, setDate] = useState(todayISO());
   const [refreshKey, setRefreshKey] = useState(0);
   const [filter, setFilter] = useState("all"); // all | pending | unpaid | paid | void
+  const [staffFilter, setStaffFilter] = useState("all");
 
   const [loading, setLoading] = useState(false);
   const [servicesLoading, setServicesLoading] = useState(false);
@@ -188,10 +197,32 @@ export default function Cashbox() {
     };
   }, [date, refreshKey, show]);
 
+  const staffOptions = useMemo(() => {
+    const map = new Map();
+
+    for (const i of incomesAll) {
+      const name = getStaffLabel(i);
+      if (name && name !== "—") {
+        map.set(name, name);
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b, "es"));
+  }, [incomesAll]);
+
   const incomes = useMemo(() => {
-    if (filter === "all") return incomesAll;
-    return incomesAll.filter((i) => i.paidStatus === filter);
-  }, [incomesAll, filter]);
+    let list = incomesAll;
+
+    if (filter !== "all") {
+      list = list.filter((i) => i.paidStatus === filter);
+    }
+
+    if (staffFilter !== "all") {
+      list = list.filter((i) => getStaffLabel(i) === staffFilter);
+    }
+
+    return list;
+  }, [incomesAll, filter, staffFilter]);
 
   const totalPaid = useMemo(() => {
     return incomesAll
@@ -228,6 +259,8 @@ export default function Cashbox() {
 
       const head = [
         "Fecha",
+        "Hora",
+        "Staff",
         "Cliente",
         "Servicio",
         "Estado",
@@ -236,8 +269,10 @@ export default function Cashbox() {
         "Final",
       ];
 
-      const body = incomesAll.map((i) => [
+      const body = incomes.map((i) => [
         formatDateDMY(getIncomeDateStr(i, date)),
+        getTimeLabel(i),
+        getStaffLabel(i),
         getClientLabel(i),
         getServiceLabel(i),
         labelStatusLocal(i.paidStatus),
@@ -434,6 +469,21 @@ export default function Cashbox() {
         >
           Anulados <span className="cashFilterCount">{counts.void}</span>
         </button>
+
+        <label className="cashCtrl" style={{ minWidth: 220 }}>
+          <span>Personal</span>
+          <select
+            value={staffFilter}
+            onChange={(e) => setStaffFilter(e.target.value)}
+          >
+            <option value="all">Todos</option>
+            {staffOptions.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="cashSummary">
@@ -638,6 +688,8 @@ function IncomeRow({ income, dateFallback, onChanged, onToast, onConfirm }) {
   const clientLabel = getClientLabel(income);
   const serviceLabel = getServiceLabel(income);
   const dateStr = getIncomeDateStr(income, dateFallback);
+  const timeLabel = getTimeLabel(income);
+  const staffLabel = getStaffLabel(income);
 
   async function handlePay() {
     try {
@@ -733,7 +785,11 @@ function IncomeRow({ income, dateFallback, onChanged, onToast, onConfirm }) {
         </div>
       </div>
 
-      <div className="cashMeta muted">{formatDateDMY(dateStr)}</div>
+      <div className="cashMeta muted">
+        {formatDateDMY(dateStr)} · {timeLabel}
+      </div>
+
+      <div className="cashMeta muted">Staff: {staffLabel}</div>
 
       <div className="cashRow">
         <div className="cashCol">

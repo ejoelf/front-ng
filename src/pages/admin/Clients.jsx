@@ -15,12 +15,6 @@ import {
 import api from "../../services/http";
 
 /** Utils */
-function onlyFirstName(name = "") {
-  const n = String(name).trim();
-  if (!n) return "";
-  return n.split(/\s+/)[0];
-}
-
 function initials(name = "") {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "—";
@@ -54,9 +48,14 @@ function formatLocalDateTimeFromParts(dateStr, startHHMM) {
   if (!dateStr || !startHHMM) {
     return `${dateStr || ""} ${startHHMM || ""}`.trim();
   }
-
   const [y, m, d] = String(dateStr).split("-");
   return `${d}/${m}/${y} ${startHHMM}`;
+}
+
+function formatDateOnly(dateStr) {
+  if (!dateStr) return "—";
+  const [y, m, d] = String(dateStr).split("-");
+  return d && m && y ? `${d}/${m}/${y}` : dateStr;
 }
 
 function dateStrFromISO(iso) {
@@ -70,7 +69,46 @@ function timeHHMMFromISO(iso) {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-/** API helpers (BACK REAL) */
+function capitalizeWords(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+// ✅ Círculo de estado de deuda
+function DebtDot({ status }) {
+  const styles = {
+    green: { background: "#22c55e" },
+    orange: { background: "#f97316" },
+    red: { background: "#ef4444" },
+  };
+
+  const titles = {
+    green: "Al día",
+    orange: "Deuda del mes",
+    red: "Deuda vencida",
+  };
+
+  const s = status || "green";
+
+  return (
+    <span
+      title={titles[s]}
+      style={{
+        display: "inline-block",
+        width: 12,
+        height: 12,
+        borderRadius: "50%",
+        flexShrink: 0,
+        ...styles[s],
+      }}
+    />
+  );
+}
+
+/** API helpers */
 async function apiListClients() {
   const { data } = await api.get("/clients");
   return data?.clients || [];
@@ -116,6 +154,12 @@ async function apiListStaff() {
   return data?.staff || [];
 }
 
+// ✅ estado de deuda de todos los clientes
+async function apiGetClientsDebtStatus() {
+  const { data } = await api.get("/incomes/client-status");
+  return data?.clientStatus || {};
+}
+
 export default function Clients() {
   const { show } = useToast();
 
@@ -130,6 +174,7 @@ export default function Clients() {
   const [clientsRaw, setClientsRaw] = useState([]);
   const [servicesRaw, setServicesRaw] = useState([]);
   const [staffRaw, setStaffRaw] = useState([]);
+  const [debtStatus, setDebtStatus] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -138,16 +183,18 @@ export default function Clients() {
     async function load() {
       setLoading(true);
       try {
-        const [clients, services, staff] = await Promise.all([
+        const [clients, services, staff, debt] = await Promise.all([
           apiListClients(),
           apiListServices(),
           apiListStaff(),
+          apiGetClientsDebtStatus(),
         ]);
 
         if (!alive) return;
         setClientsRaw(clients);
         setServicesRaw(services);
         setStaffRaw(staff);
+        setDebtStatus(debt);
       } catch (e) {
         if (!alive) return;
         const msg =
@@ -259,14 +306,16 @@ export default function Clients() {
               <div className="clientLeft">
                 <div className="clientAvatar">{initials(c.name)}</div>
                 <div className="clientMain">
-                  <div className="clientName">
-                    {onlyFirstName(c.name) || c.name || "Sin nombre"}
+                  <div className="clientName" style={{ color: "#ffffff" }}>
+                    {c.name || "Sin nombre"}
                   </div>
-                  <div className="muted clientMeta">{c.phone}</div>
                 </div>
               </div>
 
-              <div className="clientRight">
+              <div
+                className="clientRight"
+                style={{ display: "flex", alignItems: "center", gap: 10 }}
+              >
                 {Array.isArray(c.tags) && c.tags.length ? (
                   <div className="clientTags">
                     {c.tags.slice(0, 2).map((t) => (
@@ -275,14 +324,14 @@ export default function Clients() {
                       </span>
                     ))}
                     {c.tags.length > 2 ? (
-                      <span className="clientTag muted">
-                        +{c.tags.length - 2}
-                      </span>
+                      <span className="clientTag muted">+{c.tags.length - 2}</span>
                     ) : null}
                   </div>
                 ) : (
                   <div className="muted small">—</div>
                 )}
+
+                <DebtDot status={debtStatus[c.name] || "green"} />
               </div>
             </button>
           ))
@@ -337,7 +386,9 @@ function NewClientModal({ onCreated }) {
   const [email, setEmail] = useState("");
 
   async function create() {
-    const name = `${firstName} ${lastName}`.trim();
+    const normalizedFirstName = capitalizeWords(firstName);
+    const normalizedLastName = capitalizeWords(lastName);
+    const name = `${normalizedFirstName} ${normalizedLastName}`.trim();
 
     if (!name) {
       show({
@@ -378,7 +429,6 @@ function NewClientModal({ onCreated }) {
         title: "Creado",
         message: "Cliente creado correctamente.",
       });
-
       onCreated();
     } catch (e) {
       const msg =
@@ -398,17 +448,15 @@ function NewClientModal({ onCreated }) {
           label="Nombre"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
+          onBlur={() => setFirstName((prev) => capitalizeWords(prev))}
         />
         <Input
           label="Apellido"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
+          onBlur={() => setLastName((prev) => capitalizeWords(prev))}
         />
-        <Input
-          label="WhatsApp"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
+        <Input label="WhatsApp" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <Input
           label="Email (opcional)"
           value={email}
@@ -449,6 +497,9 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
   const [payMethod, setPayMethod] = useState("cash");
   const [payAmount, setPayAmount] = useState(0);
 
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailTarget, setDetailTarget] = useState(null);
+
   const [confirmPayOpen, setConfirmPayOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
@@ -461,8 +512,8 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
       try {
         const appts = await apiListAppointmentsByClientId(client.id);
 
-        const enriched = appts
-          .map((a) => {
+        const enriched = await Promise.all(
+          appts.map(async (a) => {
             const svc = servicesById.get(a.serviceId);
             const st = staffById.get(a.staffId);
 
@@ -470,8 +521,16 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
             const nextStart = a.start || timeHHMMFromISO(a.startAt);
             const nextEnd = a.end || timeHHMMFromISO(a.endAt);
 
+            let income = null;
+            try {
+              income = await apiGetIncomeByAppointmentId(a.id);
+            } catch {
+              income = null;
+            }
+
             return {
               ...a,
+              income,
               serviceName: a.serviceName || svc?.name || "Servicio",
               staffName: a.staffName || st?.name || "Staff",
               dateStr: nextDateStr,
@@ -479,22 +538,22 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
               end: nextEnd,
               startAt:
                 a.startAt ||
-                (nextDateStr && nextStart
-                  ? `${nextDateStr}T${nextStart}:00`
-                  : null),
+                (nextDateStr && nextStart ? `${nextDateStr}T${nextStart}:00` : null),
               endAt:
                 a.endAt ||
                 (nextDateStr && nextEnd ? `${nextDateStr}T${nextEnd}:00` : null),
             };
           })
-          .sort((a, b) =>
-            `${b.dateStr || ""}${b.start || ""}`.localeCompare(
-              `${a.dateStr || ""}${a.start || ""}`
-            )
-          );
+        );
+
+        const sorted = enriched.sort((a, b) =>
+          `${b.dateStr || ""}${b.start || ""}`.localeCompare(
+            `${a.dateStr || ""}${a.start || ""}`
+          )
+        );
 
         if (!alive) return;
-        setHistory(enriched);
+        setHistory(sorted);
       } catch (e) {
         if (!alive) return;
         const msg =
@@ -522,7 +581,7 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
     if (!phone) return "#";
 
     const msg = encodeURIComponent(
-      `Hola! ${onlyFirstName(client.name) || "..."}. Te contacto desde Peluquería NG.`
+      `Hola! ${splitName(client.name).firstName || "..."}. Te contacto desde Peluquería NG.`
     );
 
     return `https://wa.me/${phone}?text=${msg}`;
@@ -556,9 +615,7 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
       return;
     }
 
-    const fullName = `${String(firstName || "").trim()} ${String(
-      lastName || ""
-    ).trim()}`.trim();
+    const fullName = `${capitalizeWords(firstName)} ${capitalizeWords(lastName)}`.trim();
 
     const payload = {
       name: fullName || client.name || "Cliente",
@@ -618,7 +675,7 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
 
   async function openPayFor(appt) {
     try {
-      const inc = await apiGetIncomeByAppointmentId(appt.id);
+      const inc = appt.income || (await apiGetIncomeByAppointmentId(appt.id));
 
       if (!inc) {
         show({
@@ -633,9 +690,7 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
 
       setPayTarget({ appt, income: inc });
       setPayMethod(inc.paymentMethod || "cash");
-      setPayAmount(
-        Number(inc.amountFinal ?? inc.amountEstimated ?? appt.price ?? 0)
-      );
+      setPayAmount(Number(inc.amountFinal ?? inc.amountEstimated ?? appt.price ?? 0));
       setPayOpen(true);
     } catch (e) {
       const msg =
@@ -697,26 +752,15 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
           <div className="clientCardInfo">
             <div className="clientCardName">{client.name || "Sin nombre"}</div>
             <div className="muted">{client.phone}</div>
-            {client.email ? (
-              <div className="muted small">{client.email}</div>
-            ) : null}
+            {client.email ? <div className="muted small">{client.email}</div> : null}
           </div>
 
           <div className="clientCardActions">
-            <a
-              className="clientQuickBtn"
-              href={waLink}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className="clientQuickBtn" href={waLink} target="_blank" rel="noreferrer">
               WhatsApp
             </a>
 
-            <button
-              type="button"
-              className="clientDangerBtn"
-              onClick={askDelete}
-            >
+            <button type="button" className="clientDangerBtn" onClick={askDelete}>
               Eliminar
             </button>
           </div>
@@ -727,21 +771,19 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
             label="Nombre"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
+            onBlur={() => setFirstName((prev) => capitalizeWords(prev))}
           />
           <Input
             label="Apellido"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            onBlur={() => setLastName((prev) => capitalizeWords(prev))}
           />
           <Input label="WhatsApp" value={client.phone || ""} disabled />
 
           <label className="selectField">
             <div className="label">Cumpleaños (opcional)</div>
-            <input
-              type="date"
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
-            />
+            <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
             <div className="hint">Ideal para descuentos o promos.</div>
           </label>
 
@@ -792,10 +834,29 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
           <div className="muted">Sin historial todavía.</div>
         ) : (
           history.map((a) => (
-            <HistoryRow key={a.id} appt={a} onPay={() => openPayFor(a)} />
+            <HistoryRow
+              key={a.id}
+              appt={a}
+              onPay={() => openPayFor(a)}
+              onOpenDetail={() => {
+                setDetailTarget(a);
+                setDetailOpen(true);
+              }}
+            />
           ))
         )}
       </div>
+
+      <Modal
+        open={detailOpen}
+        title="Detalle del historial"
+        onClose={() => {
+          setDetailOpen(false);
+          setDetailTarget(null);
+        }}
+      >
+        {detailTarget ? <HistoryDetail appt={detailTarget} /> : null}
+      </Modal>
 
       <Modal
         open={payOpen}
@@ -808,17 +869,13 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
       >
         <div className="apptPay">
           <div className="muted">
-            Elegí método y monto. Esto impacta en Caja con fecha de hoy (
-            {todayLocalISO()}).
+            Elegí método y monto. Esto impacta en Caja con fecha de hoy ({todayLocalISO()}).
           </div>
 
           <div className="payGrid" style={{ marginTop: 10 }}>
             <label className="selectField">
               <div className="label">Método</div>
-              <select
-                value={payMethod}
-                onChange={(e) => setPayMethod(e.target.value)}
-              >
+              <select value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
                 {PAYMENT_OPTIONS.map((opt) => (
                   <option key={opt.code} value={opt.code}>
                     {labelPaymentMethod(opt.code)}
@@ -849,7 +906,6 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
             >
               Cancelar
             </Button>
-
             <Button type="button" onClick={requestConfirmPay}>
               Confirmar cobro
             </Button>
@@ -867,12 +923,10 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
               <br />
               <strong>No hay vuelta atrás</strong>. ¿Confirmás?
             </div>
-
             <div className="apptActions" style={{ marginTop: 6 }}>
               <Button type="button" onClick={() => setConfirmPayOpen(false)}>
                 Volver
               </Button>
-
               <Button type="button" onClick={doConfirmPay}>
                 Sí, marcar cobrado
               </Button>
@@ -888,18 +942,15 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
       >
         <div style={{ display: "grid", gap: 10 }}>
           <div className="muted">
-            Vas a ocultar a <strong>{client.name || "este cliente"}</strong> del
-            listado.
+            Vas a ocultar a <strong>{client.name || "este cliente"}</strong> del listado.
             <br />
-            Su historial de turnos se conserva y el cliente podrá restaurarse si
-            vuelve a registrarse.
+            Su historial de turnos se conserva y el cliente podrá restaurarse si vuelve a
+            registrarse.
           </div>
-
           <div className="apptActions" style={{ marginTop: 6 }}>
             <Button type="button" onClick={() => setConfirmDeleteOpen(false)}>
               Cancelar
             </Button>
-
             <Button type="button" variant="danger" onClick={doDelete}>
               Sí, eliminar
             </Button>
@@ -910,44 +961,21 @@ function ClientModal({ client, servicesById, staffById, onSaved, onDeleted }) {
   );
 }
 
-function HistoryRow({ appt, onPay }) {
-  const [inc, setInc] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let alive = true;
-
-    async function loadInc() {
-      setLoading(true);
-      try {
-        const income = await apiGetIncomeByAppointmentId(appt.id);
-        if (!alive) return;
-        setInc(income);
-      } catch {
-        if (!alive) return;
-        setInc(null);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    }
-
-    loadInc();
-
-    return () => {
-      alive = false;
-    };
-  }, [appt.id]);
-
-  const paidLabel = inc ? labelIncomeStatus(inc.paidStatus) : "—";
-  const canPay = inc && inc.paidStatus !== "paid" && inc.paidStatus !== "void";
+function HistoryRow({ appt, onPay, onOpenDetail }) {
+  const income = appt.income || null;
+  const paidLabel = income ? labelIncomeStatus(income.paidStatus) : "—";
+  const canPay = income && income.paidStatus !== "paid" && income.paidStatus !== "void";
 
   return (
-    <div className="card histItem">
+    <button
+      type="button"
+      className="card histItem"
+      onClick={onOpenDetail}
+      style={{ textAlign: "left", width: "100%" }}
+    >
       <div className="histTop">
         <strong>{appt.serviceName}</strong>
-        <span className="muted">
-          {formatLocalDateTimeFromParts(appt.dateStr, appt.start)}
-        </span>
+        <span className="muted">{formatLocalDateTimeFromParts(appt.dateStr, appt.start)}</span>
       </div>
 
       <div className="muted small">
@@ -955,22 +983,78 @@ function HistoryRow({ appt, onPay }) {
       </div>
 
       <div className="histPayRow">
-        <span className={`histPayPill cash-${inc?.paidStatus || "pending"}`}>
-          {loading ? "..." : paidLabel}
+        <span className={`histPayPill cash-${income?.paidStatus || "pending"}`}>
+          {paidLabel}
         </span>
 
         {canPay ? (
-          <Button type="button" onClick={onPay}>
-            Marcar cobrado
-          </Button>
-        ) : (
-          <span className="muted small">
-            {inc?.paidStatus === "paid" ? "Cobrado" : ""}
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onPay();
+            }}
+          >
+            <Button type="button">Marcar cobrado</Button>
           </span>
+        ) : (
+          <span className="muted small">{income?.paidStatus === "paid" ? "Cobrado" : ""}</span>
         )}
       </div>
 
       {appt.notes ? <div className="muted small">Obs: {appt.notes}</div> : null}
+    </button>
+  );
+}
+
+function HistoryDetail({ appt }) {
+  const income = appt.income || null;
+
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div>
+        <strong>Servicio:</strong> {appt.serviceName || "—"}
+      </div>
+      <div>
+        <strong>Fecha:</strong> {formatDateOnly(appt.dateStr)}
+      </div>
+      <div>
+        <strong>Hora:</strong> {appt.start || "—"}
+      </div>
+      <div>
+        <strong>Personal:</strong> {appt.staffName || "—"}
+      </div>
+      <div>
+        <strong>Estado del turno:</strong> {labelApptStatus(appt.status)}
+      </div>
+      <div>
+        <strong>Estado de pago:</strong>{" "}
+        {income ? labelIncomeStatus(income.paidStatus) : "—"}
+      </div>
+      <div>
+        <strong>Método de pago:</strong>{" "}
+        {income?.paymentMethod ? labelPaymentMethod(income.paymentMethod) : "—"}
+      </div>
+      <div>
+        <strong>Monto estimado:</strong>{" "}
+        {income?.amountEstimated != null
+          ? `$${Number(income.amountEstimated || 0).toLocaleString("es-AR")}`
+          : "—"}
+      </div>
+      <div>
+        <strong>Monto final:</strong>{" "}
+        {income?.amountFinal != null
+          ? `$${Number(income.amountFinal || 0).toLocaleString("es-AR")}`
+          : "—"}
+      </div>
+      <div>
+        <strong>Fecha de pago:</strong>{" "}
+        {income?.date ? formatDateOnly(income.date) : "—"}
+      </div>
+      {appt.notes ? (
+        <div>
+          <strong>Observaciones:</strong> {appt.notes}
+        </div>
+      ) : null}
     </div>
   );
 }
