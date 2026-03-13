@@ -9,23 +9,24 @@ function displayName(st) {
   return full || String(st?.name ?? "").trim() || "Miembro del equipo";
 }
 
-function clampStaff(arr) {
-  return (Array.isArray(arr) ? arr : []).slice(0, 10);
-}
-
 function normalizeStaffOrder(staff) {
-  const arr = clampStaff(staff).slice();
+  const arr = Array.isArray(staff) ? staff.slice() : [];
 
   arr.sort((a, b) => {
+    const aOrder = Number(a?.displayOrder ?? 0) || 0;
+    const bOrder = Number(b?.displayOrder ?? 0) || 0;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
     const ao = a?.isOwner ? 0 : 1;
     const bo = b?.isOwner ? 0 : 1;
 
     if (ao !== bo) return ao - bo;
 
-    return displayName(a).localeCompare(displayName(b));
+    return displayName(a).localeCompare(displayName(b), "es");
   });
 
-  return arr;
+  return arr.slice(0, 10);
 }
 
 export default function TeamSection({ staff }) {

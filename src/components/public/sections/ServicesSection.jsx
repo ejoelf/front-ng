@@ -6,12 +6,26 @@ function formatARS(n) {
   return v.toLocaleString("es-AR");
 }
 
-function clampServices(arr) {
-  return (Array.isArray(arr) ? arr : []).slice(0, 10);
+function normalizeServicesOrder(services) {
+  const arr = Array.isArray(services) ? services.slice() : [];
+
+  arr.sort((a, b) => {
+    const aOrder = Number(a?.displayOrder ?? 0) || 0;
+    const bOrder = Number(b?.displayOrder ?? 0) || 0;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
+    const aName = String(a?.name || "").trim();
+    const bName = String(b?.name || "").trim();
+
+    return aName.localeCompare(bName, "es");
+  });
+
+  return arr.slice(0, 10);
 }
 
 export default function ServicesSection({ services }) {
-  const list = clampServices(services);
+  const list = normalizeServicesOrder(services);
   const useCarousel = list.length > 3;
 
   return (
