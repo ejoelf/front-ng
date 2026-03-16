@@ -60,6 +60,9 @@ export default function Booking() {
   const [done, setDone] = useState(false);
   const [doneInfo, setDoneInfo] = useState(null);
 
+  // NUEVO STATE
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   function resetBooking() {
     setDone(false);
     setDoneInfo(null);
@@ -226,6 +229,8 @@ export default function Booking() {
   async function onSubmit(e) {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     if (!validate()) return;
 
     const normalizedFirstName = capitalizeWords(firstName);
@@ -250,6 +255,8 @@ export default function Booking() {
     };
 
     try {
+      setIsSubmitting(true);
+
       const { data } = await api.post("/appointments/public", payload);
 
       toast.success("Turno reservado correctamente ✅");
@@ -270,6 +277,8 @@ export default function Booking() {
       toast.error(
         e2?.response?.data?.error?.message || "No se pudo reservar.\nIntentá de nuevo."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -472,7 +481,16 @@ export default function Booking() {
           </div>
 
           <div className="bookingActions">
-            <Button type="submit">Confirmar</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <span className="loader"></span>
+                  Reservando turno...
+                </>
+              ) : (
+                "Confirmar"
+              )}
+            </Button>
           </div>
         </form>
       </div>
