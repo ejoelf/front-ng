@@ -64,10 +64,12 @@
 .svcCarousel::-webkit-scrollbar {
   height: 10px;
 }
+
 .svcCarousel::-webkit-scrollbar-track {
   background: rgba(255,255,255,0.06);
   border-radius: 999px;
 }
+
 .svcCarousel::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.18);
   border-radius: 999px;
@@ -98,7 +100,7 @@
   background-color: rgba(0,0,0,0.35);
   display: grid;
   place-items: center;
-  position: relative; /* ✅ para la pill de precio */
+  position: relative;
 }
 
 /* fallback */
@@ -127,7 +129,6 @@
   font-weight: 950;
   font-size: 13px;
   letter-spacing: 0.2px;
-
   color: rgba(255,255,255,0.92);
   background: rgba(10,12,14,0.35);
   border: 1px solid rgba(255,255,255,0.18);
@@ -142,7 +143,6 @@
   padding: 14px 16px;
   display: flex;
   align-items: center;
-
   background: rgba(10,12,14,0.22);
   border-top: 1px solid rgba(255,255,255,0.10);
 }
@@ -162,25 +162,92 @@
   text-align: center;
 }
 
-/* CTA */
+/* ===================== CTA ===================== */
+
 .svcActions {
-  margin-top: 22px;
+  margin-top: 26px;
   display: flex;
   justify-content: center;
 }
 
+.svcActionsCard {
+  width: min(760px, 100%);
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background:
+    radial-gradient(600px 220px at 10% 0%, rgba(110,231,255,0.08), transparent 60%),
+    rgba(255,255,255,0.04);
+  box-shadow: 0 16px 44px rgba(0,0,0,0.22);
+  text-align: center;
+}
+
+.svcActionsIntro h3 {
+  margin: 6px 0 10px;
+  font-size: 26px;
+  letter-spacing: -0.3px;
+}
+
+.svcActionsEyebrow {
+  margin: 0;
+  color: #b8f6ff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.svcActionsText {
+  margin: 0 auto;
+  max-width: 560px;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.svcActionsButtons {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .svcBtn {
   text-decoration: none;
-  padding: 12px 16px;
+  padding: 13px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
   color: var(--text);
   font-weight: 900;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .svcBtn:hover {
-  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.svcBtnPrimary {
+  border: 1px solid rgba(110, 231, 255, 0.30);
+  background: rgba(110, 231, 255, 0.16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.svcBtnPrimary:hover {
+  background: rgba(110, 231, 255, 0.22);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.30);
+}
+
+.svcBtnSecondary {
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+}
+
+.svcBtnSecondary:hover {
+  background: rgba(255,255,255,0.09);
 }
 
 /* ===================== RESPONSIVE ===================== */
@@ -189,6 +256,7 @@
   .svcGrid {
     grid-template-columns: repeat(2, minmax(280px, 1fr));
   }
+
   .svcImg {
     height: 320px;
   }
@@ -198,16 +266,37 @@
   .svc {
     padding: 36px 0;
   }
+
   .svcHeader h2 {
     font-size: 32px;
   }
+
   .svcGrid {
     grid-template-columns: 1fr;
   }
+
   .svcCarousel .svcCard {
     flex-basis: 82%;
   }
+
   .svcImg {
     height: 320px;
+  }
+
+  .svcActionsCard {
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+
+  .svcActionsIntro h3 {
+    font-size: 22px;
+  }
+
+  .svcActionsButtons {
+    flex-direction: column;
+  }
+
+  .svcBtn {
+    width: 100%;
   }
 }

@@ -1,5 +1,6 @@
 import "./Calendar.css";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Modal from "../../components/common/Modal";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -136,11 +137,7 @@ function isHalfHourISO(iso) {
 /* ===================== UI SETTINGS ===================== */
 
 const PX_PER_MIN = 2.4;
-
-// solo visual
 const STEP_OPTIONS = [5, 10, 15, 20, 30, 60];
-
-// regla del negocio
 const APPOINTMENT_STEP_MIN = 30;
 
 /* ===================== TOOLTIP (hover) ===================== */
@@ -148,9 +145,29 @@ const APPOINTMENT_STEP_MIN = 30;
 function Tooltip({ data }) {
   if (!data) return null;
 
+  const TOOLTIP_WIDTH = 320;
+  const MARGIN = 16;
+  const GAP = 14;
+  const APPROX_HEIGHT = 190;
+
+  let left = data.x + GAP;
+  let top = data.y + GAP;
+
+  if (left + TOOLTIP_WIDTH > window.innerWidth - MARGIN) {
+    left = data.x - TOOLTIP_WIDTH - GAP;
+  }
+
+  if (left < MARGIN) {
+    left = MARGIN;
+  }
+
+  if (top + APPROX_HEIGHT > window.innerHeight - MARGIN) {
+    top = Math.max(MARGIN, window.innerHeight - APPROX_HEIGHT - MARGIN);
+  }
+
   const style = {
-    left: data.x + 14,
-    top: data.y + 14,
+    left,
+    top,
   };
 
   return (
@@ -184,6 +201,27 @@ function Tooltip({ data }) {
 /* ===================== MAIN ===================== */
 
 export default function Calendar() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const highlightId = searchParams.get("highlight");
+  const dateFromURL = searchParams.get("date");
+
+  useEffect(() => {
+    if (dateFromURL) {
+      setDate(dateFromURL);
+    }
+  }, [dateFromURL]);
+
+  const [highlightDone, setHighlightDone] = useState(false);
+
+  const playSound = () => {
+    const audio = new Audio(
+      "https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3"
+    );
+    audio.volume = 0.25;
+    audio.play().catch(() => {});
+  };
+
   const [loadingBase, setLoadingBase] = useState(true);
   const [loadingAppts, setLoadingAppts] = useState(false);
 
@@ -196,7 +234,6 @@ export default function Calendar() {
   const [staffId, setStaffId] = useState("");
   const [refresh, setRefresh] = useState(0);
 
-  // visual
   const [viewStepMin, setViewStepMin] = useState(30);
 
   const [nowTick, setNowTick] = useState(0);
@@ -218,6 +255,33 @@ export default function Calendar() {
   const [incomeByApptId, setIncomeByApptId] = useState(new Map());
 
   useEffect(() => {
+    if (!highlightId) return;
+    if (!appts.length) return;
+    if (highlightDone) return;
+
+    const target = appts.find((a) => String(a.id) === String(highlightId));
+    if (!target) return;
+
+    const el = document.getElementById(`appt-${target.id}`);
+
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      setTimeout(() => {
+        setSelectedAppt(target);
+        setOpen(true);
+        playSound();
+      }, 500);
+
+      setTimeout(() => {
+        navigate("/admin/calendar", { replace: true });
+      }, 1500);
+
+      setHighlightDone(true);
+    }
+  }, [highlightId, appts, highlightDone, navigate]);
+
+  useEffect(() => {
     let alive = true;
 
     async function loadBase() {
@@ -227,7 +291,9 @@ export default function Calendar() {
           api.get("/business").catch(() => ({ data: null })),
           api.get("/staff").catch(() => ({ data: null })),
           api.get("/services").catch(() => ({ data: null })),
-          api.get("/clients", { params: { limit: 500 } }).catch(() => ({ data: null })),
+          api
+            .get("/clients", { params: { limit: 500 } })
+            .catch(() => ({ data: null })),
         ]);
 
         if (!alive) return;
@@ -403,402 +469,424 @@ export default function Calendar() {
 
   return (
     <div className="cal">
-      <div className="calHeader">
-        <div>
-          <h1>Agenda</h1>
-          <div className="muted">
-            Click en un turno para acciones (cobro / estado / reprogramar). Click
-            en un espacio libre para “Nuevo turno”.
-          </div>
-        </div>
-
-        <div className="calControls">
-          <label className="calCtrl">
-            <span>Fecha</span>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </label>
-
-          <label className="calCtrl">
-            <span>Staff</span>
-            <select value={staffId} onChange={(e) => setStaffId(e.target.value)}>
-              <option value="">Todos</option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="calCtrl">
-            <span>Vista</span>
-            <select
-              value={viewStepMin}
-              onChange={(e) => setViewStepMin(Number(e.target.value))}
-            >
-              {STEP_OPTIONS.map((m) => (
-                <option key={m} value={m}>
-                  Cada {m} min
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="calNewWrap">
-            <Button
-              type="button"
-              onClick={() => {
-                openNewAppt({
-                  mode: "button",
-                  dateStr: date,
-                  staffId: staffId || "",
-                  startHM: "",
-                });
-              }}
-            >
-              Nuevo
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <Tooltip data={tip} />
-
-      {loadingAppts ? (
-        <div className="card" style={{ padding: 12, marginBottom: 10 }}>
-          Cargando turnos…
-        </div>
-      ) : null}
-
       <div
-        className="calSections"
-        onMouseMove={(e) => {
-          if (!tip) return;
-          if (tipLockRef.current) return;
-          setTip((prev) =>
-            prev ? { ...prev, x: e.clientX, y: e.clientY } : prev
-          );
+        className={highlightId ? "calHighlightActive" : ""}
+        onClick={() => {
+          if (highlightId) {
+            navigate("/admin/calendar", { replace: true });
+            setHighlightDone(false);
+          }
         }}
       >
-        {sections.map((sec) => {
-          const secStart = combineDateAndTime(date, sec.start);
-          const secEnd = combineDateAndTime(date, sec.end);
+        <div className="calHeader">
+          <div>
+            <h1>Agenda</h1>
+            <div className="muted">
+              Click en un turno para acciones (cobro / estado / reprogramar).
+              Click en un espacio libre para “Nuevo turno”.
+            </div>
+          </div>
 
-          const totalMin = minutesBetween(secStart, secEnd);
-          const laneHeightPx = totalMin * PX_PER_MIN;
+          <div className="calControls">
+            <label className="calCtrl">
+              <span>Fecha</span>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </label>
 
-          const secStartMin = hmToMin(sec.start);
-          const secEndMin = hmToMin(sec.end);
+            <label className="calCtrl">
+              <span>Staff</span>
+              <select value={staffId} onChange={(e) => setStaffId(e.target.value)}>
+                <option value="">Todos</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          const apptsInSection = appts.filter((a) => {
-            const startMin = hmToMin(timeHHMMLocal(a.startAt));
-            return startMin >= secStartMin && startMin < secEndMin;
-          });
+            <label className="calCtrl">
+              <span>Vista</span>
+              <select
+                value={viewStepMin}
+                onChange={(e) => setViewStepMin(Number(e.target.value))}
+              >
+                {STEP_OPTIONS.map((m) => (
+                  <option key={m} value={m}>
+                    Cada {m} min
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          const tickPx = viewStepMin * PX_PER_MIN;
+            <div className="calNewWrap">
+              <Button
+                type="button"
+                onClick={() => {
+                  openNewAppt({
+                    mode: "button",
+                    dateStr: date,
+                    staffId: staffId || "",
+                    startHM: "",
+                  });
+                }}
+              >
+                Nuevo
+              </Button>
+            </div>
+          </div>
+        </div>
 
-          const nowLine = (() => {
-            void nowTick;
+        <Tooltip data={tip} />
 
-            const now = new Date();
-            const todayStr = todayLocalISO();
-            if (todayStr !== date) return null;
+        {loadingAppts ? (
+          <div className="card" style={{ padding: 12, marginBottom: 10 }}>
+            Cargando turnos…
+          </div>
+        ) : null}
 
-            const nowMin = now.getHours() * 60 + now.getMinutes();
-            if (nowMin < secStartMin || nowMin > secEndMin) return null;
+        <div
+          className="calSections"
+          onMouseMove={(e) => {
+            if (!tip) return;
+            if (tipLockRef.current) return;
+            setTip((prev) =>
+              prev ? { ...prev, x: e.clientX, y: e.clientY } : prev
+            );
+          }}
+        >
+          {sections.map((sec) => {
+            const secStart = combineDateAndTime(date, sec.start);
+            const secEnd = combineDateAndTime(date, sec.end);
 
-            const topMin = nowMin - secStartMin;
-            return {
-              topPx: topMin * PX_PER_MIN,
-              label: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
-            };
-          })();
+            const totalMin = minutesBetween(secStart, secEnd);
+            const laneHeightPx = totalMin * PX_PER_MIN;
 
-          // 🔒 SIEMPRE media hora, independientemente de la vista
-          const slotMins = Array.from(
-            { length: Math.floor(totalMin / APPOINTMENT_STEP_MIN) },
-            (_, i) => secStartMin + i * APPOINTMENT_STEP_MIN
-          ).filter((m) => m < secEndMin);
+            const secStartMin = hmToMin(sec.start);
+            const secEndMin = hmToMin(sec.end);
 
-          return (
-            <div
-              key={sec.key}
-              className="calSection card"
-              style={{
-                "--tickPx": `${tickPx}px`,
-              }}
-            >
-              <div className="calSectionTitleRow">
-                <div className="calSectionTitle">
-                  {sec.title} ({sec.start}–{sec.end})
-                </div>
-              </div>
+            const apptsInSection = appts.filter((a) => {
+              const startMin = hmToMin(timeHHMMLocal(a.startAt));
+              return startMin >= secStartMin && startMin < secEndMin;
+            });
 
-              <div className="calTimeline">
-                <div className="calTimes">
-                  {viewingAllStaff ? <div className="calLaneHeaderSpacer" /> : null}
+            const tickPx = viewStepMin * PX_PER_MIN;
 
-                  {Array.from({
-                    length: Math.floor(totalMin / viewStepMin) + 1,
-                  }).map((_, i) => {
-                    const labelMin = secStartMin + i * viewStepMin;
-                    const label = minToHM(labelMin);
+            const nowLine = (() => {
+              void nowTick;
 
-                    return (
-                      <div
-                        key={`${sec.key}-${label}`}
-                        className="calTimeTick"
-                        style={{ height: `${tickPx}px` }}
-                      >
-                        {label}
-                      </div>
-                    );
-                  })}
-                </div>
+              const now = new Date();
+              const todayStr = todayLocalISO();
+              if (todayStr !== date) return null;
 
-                {!viewingAllStaff ? (
-                  <div
-                    className="calBlocks calGridBg"
-                    style={{ height: `${laneHeightPx}px` }}
-                  >
-                    {nowLine ? (
-                      <div className="calNowLine" style={{ top: `${nowLine.topPx}px` }}>
-                        <div className="calNowDot" aria-hidden="true" />
-                        <div className="calNowBubble">{nowLine.label}</div>
-                      </div>
-                    ) : null}
+              const nowMin = now.getHours() * 60 + now.getMinutes();
+              if (nowMin < secStartMin || nowMin > secEndMin) return null;
 
-                    {staffId ? (
-                      <div className="calSlotsLayer">
-                        {slotMins.map((slotMin) => {
-                          const topPx = (slotMin - secStartMin) * PX_PER_MIN;
-                          const free = isSlotFree({
-                            slotMin,
-                            staffIdCheck: staffId,
-                          });
+              const topMin = nowMin - secStartMin;
+              return {
+                topPx: topMin * PX_PER_MIN,
+                label: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
+              };
+            })();
 
-                          return (
-                            <button
-                              key={`slot-${sec.key}-${staffId}-${slotMin}`}
-                              type="button"
-                              className={`calSlot ${free ? "free" : "busy"}`}
-                              style={{ top: `${topPx}px`, height: `${APPOINTMENT_STEP_MIN * PX_PER_MIN}px` }}
-                              onClick={() => {
-                                if (!free) return;
-                                openNewAppt({
-                                  mode: "slot",
-                                  dateStr: date,
-                                  staffId,
-                                  startHM: minToHM(slotMin),
-                                });
-                              }}
-                              title={free ? "Nuevo turno" : "Ocupado"}
-                            />
-                          );
-                        })}
-                      </div>
-                    ) : null}
+            const slotMins = Array.from(
+              { length: Math.floor(totalMin / APPOINTMENT_STEP_MIN) },
+              (_, i) => secStartMin + i * APPOINTMENT_STEP_MIN
+            ).filter((m) => m < secEndMin);
 
-                    {apptsInSection.map((a) => {
-                      const startLabel = timeHHMMLocal(a.startAt);
-                      const startMin = hmToMin(startLabel);
-
-                      const aStart = new Date(a.startAt);
-                      const aEnd = new Date(a.endAt);
-
-                      const topMin = startMin - secStartMin;
-                      const heightMin = Math.max(10, minutesBetween(aStart, aEnd));
-
-                      const topPx = topMin * PX_PER_MIN;
-                      const heightPx = heightMin * PX_PER_MIN;
-
-                      const who = firstNameOnly(a.clientName);
-
-                      return (
-                        <button
-                          key={a.id}
-                          type="button"
-                          className={`calBlock status-${a.status}`}
-                          style={{ top: `${topPx}px`, height: `${heightPx}px` }}
-                          onClick={() => {
-                            setSelectedAppt(a);
-                            setOpen(true);
-                          }}
-                          onMouseEnter={(e) => {
-                            const inc = incomeByApptId.get(a.id) || null;
-                            setTip({
-                              x: e.clientX,
-                              y: e.clientY,
-                              clientName: a.clientName || "—",
-                              clientPhone: a.clientPhone || "",
-                              clientEmail: a.clientEmail || "",
-                              serviceName: a.serviceName || "—",
-                              staffName: a.staffName || "—",
-                              status: a.status,
-                              timeRange: `${timeHHMMLocal(a.startAt)}–${timeHHMMLocal(
-                                a.endAt
-                              )}`,
-                              income: inc,
-                            });
-                          }}
-                          onMouseLeave={() => setTip(null)}
-                        >
-                          <div className="calBlockLine">
-                            <span className="calBlockSvc">
-                              {String(a.serviceName || "").toUpperCase()}
-                            </span>
-                            <span className="calBlockSep">—</span>
-                            <span className="calBlockClient">{who}</span>
-                            <span className="calBlockSep">—</span>
-                            <span className="calBlockTime">{startLabel}hs</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-
-                    {apptsInSection.length === 0 ? (
-                      <div className="calEmpty">Sin turnos en este tramo.</div>
-                    ) : null}
+            return (
+              <div
+                key={sec.key}
+                className="calSection card"
+                style={{
+                  "--tickPx": `${tickPx}px`,
+                }}
+              >
+                <div className="calSectionTitleRow">
+                  <div className="calSectionTitle">
+                    {sec.title} ({sec.start}–{sec.end})
                   </div>
-                ) : (
-                  <div className="calBlocksMulti" style={{ "--cols": staff.length }}>
-                    {staff.map((st) => {
-                      const items = apptsInSection.filter((a) => a.staffId === st.id);
+                </div>
+
+                <div className="calTimeline">
+                  <div className="calTimes">
+                    {viewingAllStaff ? <div className="calLaneHeaderSpacer" /> : null}
+
+                    {Array.from({
+                      length: Math.floor(totalMin / viewStepMin) + 1,
+                    }).map((_, i) => {
+                      const labelMin = secStartMin + i * viewStepMin;
+                      const label = minToHM(labelMin);
 
                       return (
-                        <div key={st.id} className="calLane">
-                          <div className="calLaneHeader">{st.name}</div>
-
-                          <div
-                            className="calLaneBody calGridBg"
-                            style={{ height: `${laneHeightPx}px` }}
-                          >
-                            {nowLine ? (
-                              <div
-                                className="calNowLine"
-                                style={{ top: `${nowLine.topPx}px` }}
-                              >
-                                <div className="calNowDot" aria-hidden="true" />
-                                <div className="calNowBubble">{nowLine.label}</div>
-                              </div>
-                            ) : null}
-
-                            <div className="calSlotsLayer">
-                              {slotMins.map((slotMin) => {
-                                const topPx = (slotMin - secStartMin) * PX_PER_MIN;
-                                const free = isSlotFree({
-                                  slotMin,
-                                  staffIdCheck: st.id,
-                                });
-
-                                return (
-                                  <button
-                                    key={`slot-${sec.key}-${st.id}-${slotMin}`}
-                                    type="button"
-                                    className={`calSlot ${free ? "free" : "busy"}`}
-                                    style={{
-                                      top: `${topPx}px`,
-                                      height: `${APPOINTMENT_STEP_MIN * PX_PER_MIN}px`,
-                                      left: 10,
-                                      right: 10,
-                                    }}
-                                    onClick={() => {
-                                      if (!free) return;
-                                      openNewAppt({
-                                        mode: "slot",
-                                        dateStr: date,
-                                        staffId: st.id,
-                                        startHM: minToHM(slotMin),
-                                      });
-                                    }}
-                                    title={free ? "Nuevo turno" : "Ocupado"}
-                                  />
-                                );
-                              })}
-                            </div>
-
-                            {items.map((a) => {
-                              const startLabel = timeHHMMLocal(a.startAt);
-                              const startMin = hmToMin(startLabel);
-
-                              const aStart = new Date(a.startAt);
-                              const aEnd = new Date(a.endAt);
-
-                              const topMin = startMin - secStartMin;
-                              const heightMin = Math.max(
-                                10,
-                                minutesBetween(aStart, aEnd)
-                              );
-
-                              const topPx = topMin * PX_PER_MIN;
-                              const heightPx = heightMin * PX_PER_MIN;
-
-                              const who = firstNameOnly(a.clientName);
-
-                              return (
-                                <button
-                                  key={a.id}
-                                  type="button"
-                                  className={`calBlock status-${a.status}`}
-                                  style={{
-                                    top: `${topPx}px`,
-                                    height: `${heightPx}px`,
-                                    left: 10,
-                                    right: 10,
-                                  }}
-                                  onClick={() => {
-                                    setSelectedAppt(a);
-                                    setOpen(true);
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    const inc = incomeByApptId.get(a.id) || null;
-                                    setTip({
-                                      x: e.clientX,
-                                      y: e.clientY,
-                                      clientName: a.clientName || "—",
-                                      clientPhone: a.clientPhone || "",
-                                      clientEmail: a.clientEmail || "",
-                                      serviceName: a.serviceName || "—",
-                                      staffName: a.staffName || "—",
-                                      status: a.status,
-                                      timeRange: `${timeHHMMLocal(
-                                        a.startAt
-                                      )}–${timeHHMMLocal(a.endAt)}`,
-                                      income: inc,
-                                    });
-                                  }}
-                                  onMouseLeave={() => setTip(null)}
-                                >
-                                  <div className="calBlockLine">
-                                    <span className="calBlockSvc">
-                                      {String(a.serviceName || "").toUpperCase()}
-                                    </span>
-                                    <span className="calBlockSep">—</span>
-                                    <span className="calBlockClient">{who}</span>
-                                    <span className="calBlockSep">—</span>
-                                    <span className="calBlockTime">{startLabel}hs</span>
-                                  </div>
-                                </button>
-                              );
-                            })}
-
-                            {items.length === 0 ? (
-                              <div className="calLaneEmpty">—</div>
-                            ) : null}
-                          </div>
+                        <div
+                          key={`${sec.key}-${label}`}
+                          className="calTimeTick"
+                          style={{ height: `${tickPx}px` }}
+                        >
+                          {label}
                         </div>
                       );
                     })}
                   </div>
-                )}
+
+                  {!viewingAllStaff ? (
+                    <div
+                      className="calBlocks calGridBg"
+                      style={{ height: `${laneHeightPx}px` }}
+                    >
+                      {nowLine ? (
+                        <div className="calNowLine" style={{ top: `${nowLine.topPx}px` }}>
+                          <div className="calNowDot" aria-hidden="true" />
+                          <div className="calNowBubble">{nowLine.label}</div>
+                        </div>
+                      ) : null}
+
+                      {staffId ? (
+                        <div className="calSlotsLayer">
+                          {slotMins.map((slotMin) => {
+                            const topPx = (slotMin - secStartMin) * PX_PER_MIN;
+                            const free = isSlotFree({
+                              slotMin,
+                              staffIdCheck: staffId,
+                            });
+
+                            return (
+                              <button
+                                key={`slot-${sec.key}-${staffId}-${slotMin}`}
+                                type="button"
+                                className={`calSlot ${free ? "free" : "busy"}`}
+                                style={{
+                                  top: `${topPx}px`,
+                                  height: `${APPOINTMENT_STEP_MIN * PX_PER_MIN}px`,
+                                }}
+                                onClick={() => {
+                                  if (!free) return;
+                                  openNewAppt({
+                                    mode: "slot",
+                                    dateStr: date,
+                                    staffId,
+                                    startHM: minToHM(slotMin),
+                                  });
+                                }}
+                                title={free ? "Nuevo turno" : "Ocupado"}
+                              />
+                            );
+                          })}
+                        </div>
+                      ) : null}
+
+                      {apptsInSection.map((a) => {
+                        const startLabel = timeHHMMLocal(a.startAt);
+                        const startMin = hmToMin(startLabel);
+
+                        const aStart = new Date(a.startAt);
+                        const aEnd = new Date(a.endAt);
+
+                        const topMin = startMin - secStartMin;
+                        const heightMin = Math.max(10, minutesBetween(aStart, aEnd));
+
+                        const topPx = topMin * PX_PER_MIN;
+                        const heightPx = heightMin * PX_PER_MIN;
+
+                        const who = firstNameOnly(a.clientName);
+
+                        return (
+                          <button
+                            key={a.id}
+                            id={`appt-${a.id}`}
+                            type="button"
+                            className={`calBlock status-${a.status} ${
+                              String(a.id) === String(highlightId)
+                                ? "highlight focusMode"
+                                : "fade"
+                            }`}
+                            style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+                            onClick={() => {
+                              setSelectedAppt(a);
+                              setOpen(true);
+                            }}
+                            onMouseEnter={(e) => {
+                              const inc = incomeByApptId.get(a.id) || null;
+                              setTip({
+                                x: e.clientX,
+                                y: e.clientY,
+                                clientName: a.clientName || "—",
+                                clientPhone: a.clientPhone || "",
+                                clientEmail: a.clientEmail || "",
+                                serviceName: a.serviceName || "—",
+                                staffName: a.staffName || "—",
+                                status: a.status,
+                                timeRange: `${timeHHMMLocal(a.startAt)}–${timeHHMMLocal(
+                                  a.endAt
+                                )}`,
+                                income: inc,
+                              });
+                            }}
+                            onMouseLeave={() => setTip(null)}
+                          >
+                            <div className="calBlockLine">
+                              <span className="calBlockSvc">
+                                {String(a.serviceName || "").toUpperCase()}
+                              </span>
+                              <span className="calBlockSep">—</span>
+                              <span className="calBlockClient">{who}</span>
+                              <span className="calBlockSep">—</span>
+                              <span className="calBlockTime">{startLabel}hs</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+
+                      {apptsInSection.length === 0 ? (
+                        <div className="calEmpty">Sin turnos en este tramo.</div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="calBlocksMulti" style={{ "--cols": staff.length }}>
+                      {staff.map((st) => {
+                        const items = apptsInSection.filter((a) => a.staffId === st.id);
+
+                        return (
+                          <div key={st.id} className="calLane">
+                            <div className="calLaneHeader">{st.name}</div>
+
+                            <div
+                              className="calLaneBody calGridBg"
+                              style={{ height: `${laneHeightPx}px` }}
+                            >
+                              {nowLine ? (
+                                <div
+                                  className="calNowLine"
+                                  style={{ top: `${nowLine.topPx}px` }}
+                                >
+                                  <div className="calNowDot" aria-hidden="true" />
+                                  <div className="calNowBubble">{nowLine.label}</div>
+                                </div>
+                              ) : null}
+
+                              <div className="calSlotsLayer">
+                                {slotMins.map((slotMin) => {
+                                  const topPx = (slotMin - secStartMin) * PX_PER_MIN;
+                                  const free = isSlotFree({
+                                    slotMin,
+                                    staffIdCheck: st.id,
+                                  });
+
+                                  return (
+                                    <button
+                                      key={`slot-${sec.key}-${st.id}-${slotMin}`}
+                                      type="button"
+                                      className={`calSlot ${free ? "free" : "busy"}`}
+                                      style={{
+                                        top: `${topPx}px`,
+                                        height: `${APPOINTMENT_STEP_MIN * PX_PER_MIN}px`,
+                                        left: 10,
+                                        right: 10,
+                                      }}
+                                      onClick={() => {
+                                        if (!free) return;
+                                        openNewAppt({
+                                          mode: "slot",
+                                          dateStr: date,
+                                          staffId: st.id,
+                                          startHM: minToHM(slotMin),
+                                        });
+                                      }}
+                                      title={free ? "Nuevo turno" : "Ocupado"}
+                                    />
+                                  );
+                                })}
+                              </div>
+
+                              {items.map((a) => {
+                                const startLabel = timeHHMMLocal(a.startAt);
+                                const startMin = hmToMin(startLabel);
+
+                                const aStart = new Date(a.startAt);
+                                const aEnd = new Date(a.endAt);
+
+                                const topMin = startMin - secStartMin;
+                                const heightMin = Math.max(
+                                  10,
+                                  minutesBetween(aStart, aEnd)
+                                );
+
+                                const topPx = topMin * PX_PER_MIN;
+                                const heightPx = heightMin * PX_PER_MIN;
+
+                                const who = firstNameOnly(a.clientName);
+
+                                return (
+                                  <button
+                                    key={a.id}
+                                    id={`appt-${a.id}`}
+                                    type="button"
+                                    className={`calBlock status-${a.status} ${
+                                      String(a.id) === String(highlightId)
+                                        ? "highlight focusMode"
+                                        : "fade"
+                                    }`}
+                                    style={{
+                                      top: `${topPx}px`,
+                                      height: `${heightPx}px`,
+                                      left: 10,
+                                      right: 10,
+                                    }}
+                                    onClick={() => {
+                                      setSelectedAppt(a);
+                                      setOpen(true);
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      const inc = incomeByApptId.get(a.id) || null;
+                                      setTip({
+                                        x: e.clientX,
+                                        y: e.clientY,
+                                        clientName: a.clientName || "—",
+                                        clientPhone: a.clientPhone || "",
+                                        clientEmail: a.clientEmail || "",
+                                        serviceName: a.serviceName || "—",
+                                        staffName: a.staffName || "—",
+                                        status: a.status,
+                                        timeRange: `${timeHHMMLocal(
+                                          a.startAt
+                                        )}–${timeHHMMLocal(a.endAt)}`,
+                                        income: inc,
+                                      });
+                                    }}
+                                    onMouseLeave={() => setTip(null)}
+                                  >
+                                    <div className="calBlockLine">
+                                      <span className="calBlockSvc">
+                                        {String(a.serviceName || "").toUpperCase()}
+                                      </span>
+                                      <span className="calBlockSep">—</span>
+                                      <span className="calBlockClient">{who}</span>
+                                      <span className="calBlockSep">—</span>
+                                      <span className="calBlockTime">{startLabel}hs</span>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+
+                              {items.length === 0 ? (
+                                <div className="calLaneEmpty">—</div>
+                              ) : null}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       <Modal
@@ -879,7 +967,9 @@ function NewAppointmentModal({
   const [q, setQ] = useState("");
   const [showSuggest, setShowSuggest] = useState(false);
 
-  // 🔒 siempre media hora
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+
   const timeOptions = useMemo(() => {
     const list = [];
     for (let m = 0; m < 24 * 60; m += APPOINTMENT_STEP_MIN) {
@@ -928,16 +1018,19 @@ function NewAppointmentModal({
     return true;
   }
 
-  async function create() {
-    if (!validate()) return;
+  async function submitCreate(sendEmailNotification) {
+    if (creating) return;
 
     const service = services.find((s) => s.id === serviceId);
     const st = staffList.find((s) => s.id === staffId);
 
     const fullName = `${String(firstName).trim()} ${String(lastName).trim()}`.trim();
     const startAtISO = combineDateAndTime(date, timeHM).toISOString();
+    const trimmedEmail = String(email || "").trim();
 
     try {
+      setCreating(true);
+
       await api.post("/appointments", {
         serviceId,
         staffId,
@@ -945,162 +1038,215 @@ function NewAppointmentModal({
         notes: String(notes || "").trim(),
         allowOverlap: Boolean(overbook),
         channel: "manual",
+        sendEmailNotification: Boolean(sendEmailNotification),
         client: {
           name: fullName,
           phone: String(phone).trim(),
-          email: String(email || "").trim(),
+          email: trimmedEmail,
         },
         clientName: fullName,
         clientPhone: String(phone).trim(),
-        clientEmail: String(email || "").trim(),
+        clientEmail: trimmedEmail,
         serviceName: service?.name,
         staffName: st?.name,
       });
 
+      setEmailModalOpen(false);
       toast.success("Turno creado ✅");
       onCreated();
     } catch (err) {
       toast.error(
         err?.response?.data?.error?.message || "No se pudo crear el turno."
       );
+    } finally {
+      setCreating(false);
     }
   }
 
+  async function create() {
+    if (!validate()) return;
+
+    const trimmedEmail = String(email || "").trim();
+
+    if (trimmedEmail) {
+      setEmailModalOpen(true);
+      return;
+    }
+
+    await submitCreate(false);
+  }
+
   return (
-    <div className="newAppt">
-      <div className="newApptGrid">
-        <label className="selectField">
-          <div className="label">Staff</div>
-          <select value={staffId} onChange={(e) => setStaffId(e.target.value)}>
-            <option value="">Elegí…</option>
-            {staffList.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
+    <>
+      <div className="newAppt">
+        <div className="newApptGrid">
+          <label className="selectField">
+            <div className="label">Staff</div>
+            <select value={staffId} onChange={(e) => setStaffId(e.target.value)}>
+              <option value="">Elegí…</option>
+              {staffList.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="selectField">
-          <div className="label">Servicio</div>
-          <select
-            value={serviceId}
-            onChange={(e) => setServiceId(e.target.value)}
-          >
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="selectField">
+            <div className="label">Servicio</div>
+            <select
+              value={serviceId}
+              onChange={(e) => setServiceId(e.target.value)}
+            >
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <Input
-          label="Fecha"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+          <Input
+            label="Fecha"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
 
-        <label className="selectField">
-          <div className="label">Hora</div>
-          <select value={timeHM} onChange={(e) => setTimeHM(e.target.value)}>
-            <option value="">Elegí…</option>
-            {timeOptions.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="selectField">
+            <div className="label">Hora</div>
+            <select value={timeHM} onChange={(e) => setTimeHM(e.target.value)}>
+              <option value="">Elegí…</option>
+              {timeOptions.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <div className="newApptWide">
-          <div className="newApptSuggestLabel">
-            Buscar cliente existente (opcional)
+          <div className="newApptWide">
+            <div className="newApptSuggestLabel">
+              Buscar cliente existente (opcional)
+            </div>
+
+            <div className="newApptSuggestWrap">
+              <input
+                className="newApptSuggestInput"
+                value={q}
+                placeholder="Escribí nombre, teléfono o email…"
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setShowSuggest(true);
+                }}
+                onFocus={() => setShowSuggest(true)}
+                onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
+              />
+
+              {showSuggest && suggestions.length > 0 ? (
+                <div className="newApptSuggestList">
+                  {suggestions.map((c) => (
+                    <button
+                      type="button"
+                      className="newApptSuggestItem"
+                      key={c.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyClient(c);
+                      }}
+                    >
+                      <div className="sugName">{c.name}</div>
+                      <div className="sugMeta">
+                        {c.phone || "—"} · {c.email || "—"}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
 
-          <div className="newApptSuggestWrap">
-            <input
-              className="newApptSuggestInput"
-              value={q}
-              placeholder="Escribí nombre, teléfono o email…"
-              onChange={(e) => {
-                setQ(e.target.value);
-                setShowSuggest(true);
-              }}
-              onFocus={() => setShowSuggest(true)}
-              onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
+          <Input
+            label="Nombre"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <Input
+            label="Apellido"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+          <Input
+            label="WhatsApp"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <Input
+            label="Email (opcional)"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <label className="selectField newApptWide">
+            <div className="label">Observaciones (opcional)</div>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ej: llega 10 min tarde..."
             />
+          </label>
 
-            {showSuggest && suggestions.length > 0 ? (
-              <div className="newApptSuggestList">
-                {suggestions.map((c) => (
-                  <button
-                    type="button"
-                    className="newApptSuggestItem"
-                    key={c.id}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      applyClient(c);
-                    }}
-                  >
-                    <div className="sugName">{c.name}</div>
-                    <div className="sugMeta">
-                      {c.phone || "—"} · {c.email || "—"}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <label className="newApptOver">
+            <input
+              type="checkbox"
+              checked={overbook}
+              onChange={(e) => setOverbook(e.target.checked)}
+            />
+            <span>Sobreturno (permitir aunque esté ocupado)</span>
+          </label>
         </div>
 
-        <Input
-          label="Nombre"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-        <Input
-          label="Apellido"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
-        <Input
-          label="WhatsApp"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        <Input
-          label="Email (opcional)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <label className="selectField newApptWide">
-          <div className="label">Observaciones (opcional)</div>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Ej: llega 10 min tarde..."
-          />
-        </label>
-
-        <label className="newApptOver">
-          <input
-            type="checkbox"
-            checked={overbook}
-            onChange={(e) => setOverbook(e.target.checked)}
-          />
-          <span>Sobreturno (permitir aunque esté ocupado)</span>
-        </label>
+        <div className="apptActions" style={{ marginTop: 12 }}>
+          <Button type="button" onClick={create} disabled={creating}>
+            {creating ? "Creando..." : "Crear turno"}
+          </Button>
+        </div>
       </div>
 
-      <div className="apptActions" style={{ marginTop: 12 }}>
-        <Button type="button" onClick={create}>
-          Crear turno
-        </Button>
-      </div>
-    </div>
+      <Modal
+        open={emailModalOpen}
+        title="Enviar notificación por email"
+        onClose={() => {
+          if (!creating) setEmailModalOpen(false);
+        }}
+      >
+        <div className="apptPay">
+          <div className="muted">
+            Este cliente tiene email cargado.
+            <br />
+            ¿Querés enviarle la notificación de confirmación del turno?
+          </div>
+
+          <div className="apptActions" style={{ marginTop: 12 }}>
+            <Button
+              type="button"
+              onClick={() => submitCreate(false)}
+              disabled={creating}
+            >
+              {creating ? "Creando..." : "No enviar"}
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => submitCreate(true)}
+              disabled={creating}
+            >
+              {creating ? "Creando..." : "Sí, enviar email"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
 
@@ -1130,6 +1276,7 @@ function AppointmentModal({
 
   const [slotsState, setSlotsState] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -1148,7 +1295,9 @@ function AppointmentModal({
           },
         });
 
-        const list = normalizeList(data, "slots").filter((sl) => isHalfHourISO(sl?.startAt));
+        const list = normalizeList(data, "slots").filter((sl) =>
+          isHalfHourISO(sl?.startAt)
+        );
         if (!alive) return;
         setSlotsState(list);
       } catch (err) {
@@ -1181,16 +1330,19 @@ function AppointmentModal({
   const canReschedule = !isCancelled && !isPaid && !isPast && !isCompleted;
   const canMarkCompleted = !isCancelled && !isCompleted;
   const canNoShow = !isCancelled && !isCompleted;
-  const canPay = !isCancelled && !isNoShow && !isPaid && !isUnpaid;
+  const canPay = !isCancelled && !isNoShow && !isPaid && !isUnpaid && !paying;
   const canSetUnpaid =
     Boolean(income) &&
     income?.paidStatus === "pending" &&
     !isCancelled &&
-    !isNoShow;
+    !isNoShow &&
+    !paying;
   const canBackToPending =
-    Boolean(income) && income?.paidStatus === "unpaid" && !isCancelled;
+    Boolean(income) && income?.paidStatus === "unpaid" && !isCancelled && !paying;
 
   async function updateStatus(status) {
+    if (paying) return;
+
     try {
       await api.patch(`/appointments/${appointment.id}/status`, { status });
       toast.success("Estado actualizado.");
@@ -1204,6 +1356,8 @@ function AppointmentModal({
   }
 
   async function cancel() {
+    if (paying) return;
+
     try {
       await api.post(`/appointments/${appointment.id}/cancel`);
       toast.success("Turno cancelado.");
@@ -1214,6 +1368,8 @@ function AppointmentModal({
   }
 
   async function reschedule() {
+    if (paying) return;
+
     if (!selectedSlot?.startAt) {
       toast.error("Elegí un horario.");
       return;
@@ -1246,12 +1402,16 @@ function AppointmentModal({
   }
 
   async function markIncomePaid() {
+    if (paying) return;
+
     if (!income?.id) {
       toast.error("No se encontró el ingreso para este turno.");
       return;
     }
 
     try {
+      setPaying(true);
+
       await api.post("/incomes/mark-paid", {
         incomeId: income.id,
         paymentMethod: method,
@@ -1271,10 +1431,14 @@ function AppointmentModal({
         err?.response?.data?.error?.message ||
           "No se pudo registrar el pago."
       );
+    } finally {
+      setPaying(false);
     }
   }
 
   async function setIncomeStatus(paidStatus) {
+    if (paying) return;
+
     if (!income?.id) {
       toast.error("No se encontró el ingreso para este turno.");
       return;
@@ -1293,7 +1457,16 @@ function AppointmentModal({
   }
 
   return (
-    <div className="apptModal">
+    <div className={`apptModal ${paying ? "apptModalLoading" : ""}`}>
+      {paying ? (
+        <div className="apptLoadingOverlay">
+          <div className="apptLoadingBox">
+            <div className="apptLoadingSpinner" />
+            <div className="apptLoadingText">Procesando cobro...</div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="apptLine">
         <strong>Cliente:</strong> {appointment.clientName || "—"} ·{" "}
         {appointment.clientPhone || "—"}
@@ -1331,6 +1504,8 @@ function AppointmentModal({
             variant="danger"
             type="button"
             onClick={() => {
+              if (paying) return;
+
               if (!canCancel) {
                 toast.error(
                   "No podés cancelar este turno (ya pasó / está pagado / completado)."
@@ -1347,6 +1522,8 @@ function AppointmentModal({
           <Button
             type="button"
             onClick={() => {
+              if (paying) return;
+
               if (!canReschedule) {
                 toast.error(
                   "No podés reprogramar este turno (ya pasó / está pagado / completado)."
@@ -1363,7 +1540,7 @@ function AppointmentModal({
           <Button
             type="button"
             onClick={() => canMarkCompleted && updateStatus("completed")}
-            disabled={!canMarkCompleted}
+            disabled={!canMarkCompleted || paying}
           >
             Marcar realizado
           </Button>
@@ -1371,7 +1548,7 @@ function AppointmentModal({
           <Button
             type="button"
             onClick={() => canNoShow && updateStatus("no-show")}
-            disabled={!canNoShow}
+            disabled={!canNoShow || paying}
           >
             No vino
           </Button>
@@ -1381,18 +1558,27 @@ function AppointmentModal({
               variant="danger"
               type="button"
               onClick={() => setMode("unpaidConfirm")}
+              disabled={paying}
             >
               No cobrado
             </Button>
           ) : null}
 
           {canBackToPending ? (
-            <Button type="button" onClick={() => setIncomeStatus("pending")}>
+            <Button
+              type="button"
+              onClick={() => setIncomeStatus("pending")}
+              disabled={paying}
+            >
               Volver a “Pendiente”
             </Button>
           ) : null}
 
-          <Button type="button" onClick={() => setMode("pay")} disabled={!canPay}>
+          <Button
+            type="button"
+            onClick={() => setMode("pay")}
+            disabled={!canPay}
+          >
             Cobrar
           </Button>
         </div>
@@ -1407,11 +1593,16 @@ function AppointmentModal({
           </div>
 
           <div className="apptActions" style={{ marginTop: 12 }}>
-            <Button type="button" onClick={() => setMode("view")}>
+            <Button type="button" onClick={() => setMode("view")} disabled={paying}>
               Volver
             </Button>
 
-            <Button variant="danger" type="button" onClick={cancel}>
+            <Button
+              variant="danger"
+              type="button"
+              onClick={cancel}
+              disabled={paying}
+            >
               Confirmar cancelación
             </Button>
           </div>
@@ -1428,7 +1619,7 @@ function AppointmentModal({
           </div>
 
           <div className="apptActions" style={{ marginTop: 12 }}>
-            <Button type="button" onClick={() => setMode("view")}>
+            <Button type="button" onClick={() => setMode("view")} disabled={paying}>
               Volver
             </Button>
 
@@ -1436,6 +1627,7 @@ function AppointmentModal({
               variant="danger"
               type="button"
               onClick={() => setIncomeStatus("unpaid")}
+              disabled={paying}
             >
               Confirmar “No cobrado”
             </Button>
@@ -1457,6 +1649,7 @@ function AppointmentModal({
                 setNewStaffId(e.target.value);
                 setSelectedSlot(null);
               }}
+              disabled={paying}
             >
               {staffList.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -1475,6 +1668,7 @@ function AppointmentModal({
                 setNewDate(e.target.value);
                 setSelectedSlot(null);
               }}
+              disabled={paying}
             />
           </label>
 
@@ -1492,6 +1686,7 @@ function AppointmentModal({
                     selectedSlot?.startAt === sl.startAt ? "active" : ""
                   }`}
                   onClick={() => setSelectedSlot(sl)}
+                  disabled={paying}
                 >
                   {sl.label || timeHHMMLocal(sl.startAt)}
                 </button>
@@ -1500,11 +1695,11 @@ function AppointmentModal({
           </div>
 
           <div className="apptActions" style={{ marginTop: 12 }}>
-            <Button type="button" onClick={() => setMode("view")}>
+            <Button type="button" onClick={() => setMode("view")} disabled={paying}>
               Volver
             </Button>
 
-            <Button type="button" onClick={reschedule}>
+            <Button type="button" onClick={reschedule} disabled={paying}>
               Confirmar reprogramación
             </Button>
           </div>
@@ -1518,7 +1713,11 @@ function AppointmentModal({
           <div className="payGrid">
             <label className="selectField">
               <div className="label">Método</div>
-              <select value={method} onChange={(e) => setMethod(e.target.value)}>
+              <select
+                value={method}
+                onChange={(e) => setMethod(e.target.value)}
+                disabled={paying}
+              >
                 {PAYMENT_OPTIONS.map((opt) => (
                   <option key={opt.code} value={opt.code}>
                     {labelPaymentMethod(opt.code)}
@@ -1534,17 +1733,18 @@ function AppointmentModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 min="0"
+                disabled={paying}
               />
             </label>
           </div>
 
           <div className="apptActions" style={{ marginTop: 12 }}>
-            <Button type="button" onClick={() => setMode("view")}>
+            <Button type="button" onClick={() => setMode("view")} disabled={paying}>
               Volver
             </Button>
 
             <Button type="button" onClick={markIncomePaid} disabled={!canPay}>
-              Confirmar cobro
+              {paying ? "Procesando..." : "Confirmar cobro"}
             </Button>
           </div>
         </div>

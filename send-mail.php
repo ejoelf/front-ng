@@ -1,100 +1,87 @@
 <?php
-// send-mail.php
 header('Content-Type: application/json; charset=utf-8');
 
-// Permitir solo POST
+// ===============================
+// 🔥 PHPMailer
+// ===============================
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require __DIR__ . '/PHPMailer/src/Exception.php';
+require __DIR__ . '/PHPMailer/src/PHPMailer.php';
+require __DIR__ . '/PHPMailer/src/SMTP.php';
+
+// ===============================
+// 🚫 SOLO POST
+// ===============================
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   http_response_code(405);
-  echo json_encode([
-    'ok' => false,
-    'message' => 'Método no permitido'
-  ]);
+  echo json_encode(['ok' => false]);
   exit;
 }
 
-// Honeypot anti-bots (si viene lleno, simulamos OK)
-$company = trim($_POST['company'] ?? '');
-if ($company !== '') {
-  echo json_encode(['ok' => true]);
-  exit;
-}
-
-$name    = trim($_POST['name']    ?? '');
-$email   = trim($_POST['email']   ?? '');
+// ===============================
+// 📥 DATA
+// ===============================
+$name    = trim($_POST['name'] ?? '');
+$email   = trim($_POST['email'] ?? '');
 $message = trim($_POST['message'] ?? '');
 
-function is_valid_email($email) {
-  return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
-}
-
-function clean_header_value($value) {
-  $value = str_replace(["\r", "\n"], ' ', $value);
-  return trim($value);
-}
-
-$errors = [];
-
-if ($name === '' || mb_strlen($name) < 2) {
-  $errors[] = 'Nombre inválido';
-}
-
-if ($email === '' || !is_valid_email($email)) {
-  $errors[] = 'Email inválido';
-}
-
-if ($message === '' || mb_strlen($message) < 10) {
-  $errors[] = 'Mensaje muy corto';
-}
-
-if (!empty($errors)) {
-  http_response_code(400);
-  echo json_encode([
-    'ok'      => false,
-    'message' => 'Revisá los datos e intentá de nuevo.'
-  ]);
+// ===============================
+// 🔍 VALIDACIÓN
+// ===============================
+if (!$name || !$email || !$message) {
+  echo json_encode(['ok' => false, 'message' => 'Datos incompletos']);
   exit;
 }
 
-// ✅ Destinatario final: Gmail de Nico
-$TO_EMAIL = 'nicogalicia1@gmail.com';
+// ===============================
+// 🚀 MAILER
+// ===============================
+$mail = new PHPMailer(true);
 
-// ✅ Remitente: email del dominio propio (evita spam)
-// Al venir de contacto@nicogaliciastylistmens.com Hostinger lo firma con SPF/DKIM
-// y Gmail lo acepta como legítimo en vez de mandarlo a spam.
-$FROM_EMAIL = 'contacto@nicogaliciastylistmens.com';
-$FROM_NAME  = 'NG Stylist Mens Web';
+try {
+  // ===============================
+  // 🔐 SMTP HOSTINGER
+  // ===============================
+  $mail->isSMTP();
+  $mail->Host       = 'smtp.hostinger.com';
+  $mail->SMTPAuth   = true;
+  $mail->Username   = 'contacto@nicogaliciastylistmens.com';
+  $mail->Password   = 'Nicolas.Galicia.2026'; // 👈 PEGÁ TU PASSWORD
+  $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+  $mail->Port       = 587;
 
-$safeName  = clean_header_value($name);
-$safeEmail = clean_header_value($email);
+  // ===============================
+  // ✉️ CONFIG EMAIL
+  // ===============================
+  $mail->setFrom('contacto@nicogaliciastylistmens.com', 'Web NG');
+  $mail->addAddress('contacto@nicogaliciastylistmens.com');
 
-$subject = 'Nuevo mensaje desde la web - ' . $safeName;
+  // responder al cliente
+  $mail->addReplyTo($email, $name);
 
-$body  = "Nuevo mensaje recibido desde nicogaliciastylistmens.com:\n\n";
-$body .= "Nombre:  {$name}\n";
-$body .= "Email:   {$email}\n\n";
-$body .= "Mensaje:\n{$message}\n\n";
-$body .= "---\n";
-$body .= "IP:    " . ($_SERVER['REMOTE_ADDR'] ?? '-') . "\n";
-$body .= "Fecha: " . date('Y-m-d H:i:s') . "\n";
+  // ===============================
+  // 📝 CONTENIDO
+  // ===============================
+  $mail->isHTML(false);
+  $mail->Subject = 'Nuevo mensaje desde la web';
 
-// ✅ Headers correctos:
-// - From: usa el email del dominio → Hostinger aplica SPF y DKIM → no va a spam
-// - Reply-To: el email del visitante → cuando Nico responde, le llega al cliente
-$headers   = [];
-$headers[] = "From: {$FROM_NAME} <{$FROM_EMAIL}>";
-$headers[] = "Reply-To: {$safeName} <{$safeEmail}>";
-$headers[] = "Content-Type: text/plain; charset=UTF-8";
-$headers[] = "X-Mailer: PHP/" . phpversion();
+  $mail->Body = "Nuevo mensaje:\n\n"
+    . "Nombre: $name\n"
+    . "Email: $email\n\n"
+    . "Mensaje:\n$message\n";
 
-$ok = @mail($TO_EMAIL, $subject, $body, implode("\r\n", $headers));
+  // ===============================
+  // 📤 ENVIAR
+  // ===============================
+  $mail->send();
 
-if (!$ok) {
-  http_response_code(500);
+  echo json_encode(['ok' => true]);
+
+} catch (Exception $e) {
   echo json_encode([
-    'ok'      => false,
-    'message' => 'No se pudo enviar el email desde el servidor.'
+    'ok' => false,
+    'message' => $mail->ErrorInfo
   ]);
-  exit;
 }
-
-echo json_encode(['ok' => true]);

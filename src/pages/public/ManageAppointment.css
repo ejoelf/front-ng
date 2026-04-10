@@ -1,0 +1,439 @@
+/* =========================
+   BASE
+   ========================= */
+
+.managePage {
+  padding: 28px 0 56px;
+}
+
+.manageCard {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  padding: 28px 28px 30px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(110, 231, 255, 0.06), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.08), transparent 30%),
+    rgba(255, 255, 255, 0.025);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+}
+
+.manageCard h2 {
+  margin: 0;
+  font-size: clamp(40px, 5vw, 58px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.manageCard > p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.highlightCard {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(110, 231, 255, 0.08),
+    0 24px 64px rgba(0, 0, 0, 0.34);
+}
+
+/* =========================
+   TOP BAR
+   ========================= */
+
+.manageTopBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.manageTopBar > div {
+  min-width: 0;
+}
+
+.manageTopHint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.55;
+  max-width: 680px;
+}
+
+/* =========================
+   FORM
+   ========================= */
+
+.manageCard input,
+.manageCard select {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+  font-size: 15px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.manageCard input:focus,
+.manageCard select:focus {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.manageCard select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 55%,
+    calc(100% - 14px) 55%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 42px;
+}
+
+.manageCard select option {
+  background: #0b0c10;
+  color: var(--text);
+}
+
+.manageSearchActions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchBtn {
+  text-decoration: none;
+  padding: 13px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(110, 231, 255, 0.32);
+  background: rgba(110, 231, 255, 0.16);
+  color: var(--text);
+  font-weight: 900;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+/* =========================
+   INFO
+   ========================= */
+
+.manageInfo {
+  margin-top: 18px;
+  text-align: left;
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.02));
+}
+
+.manageInfo p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+.manageInfo strong {
+  color: var(--muted);
+  margin-right: 8px;
+  font-weight: 800;
+}
+
+/* =========================
+   ACTIONS
+   ========================= */
+
+.manageActions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.manageDateField {
+  display: grid;
+  gap: 8px;
+  min-width: min(320px, 100%);
+}
+
+.manageDateField span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.manageDateField input,
+.manageDateField select {
+  margin-top: 0;
+}
+
+/* =========================
+   LIST
+   ========================= */
+
+.manageList {
+  margin-top: 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.manageItem {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  transition:
+    transform 0.18s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.manageItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.manageItem p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+/* =========================
+   SLOTS
+   ========================= */
+
+.manageSlots {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.manageSlots .slot {
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 15px;
+  text-align: center;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.manageSlots .slot:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.manageSlots .slot.active {
+  border-color: rgba(110, 231, 255, 0.45);
+  background: rgba(110, 231, 255, 0.14);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
+/* =========================
+   STATES
+   ========================= */
+
+.manageEmpty {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  color: var(--muted);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  line-height: 1.5;
+}
+
+/* =========================
+   MODAL
+   ========================= */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
+  padding: 16px;
+}
+
+.modalBox {
+  width: min(440px, 100%);
+  padding: 24px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(20, 20, 20, 0.98), rgba(12, 12, 12, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  animation: scaleIn 0.2s ease;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.modalBox h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.modalBox p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.modalBox input,
+.modalBox select {
+  margin-top: 14px;
+}
+
+.modalActions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.modalClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.modalClose:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   ANIMATIONS
+   ========================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+  .managePage {
+    padding: 18px 0 36px;
+  }
+
+  .manageCard {
+    padding: 20px 16px 22px;
+    border-radius: 22px;
+  }
+
+  .manageTopBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .manageCard h2 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+
+  .manageTopHint {
+    font-size: 15px;
+  }
+
+  .manageInfo {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .manageInfo p {
+    font-size: 15px;
+  }
+
+  .manageSlots {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+
+  .manageItem {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .manageDateField {
+    min-width: 100%;
+  }
+}

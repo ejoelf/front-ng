@@ -1,5 +1,6 @@
 import "./ContactSection.css";
 import { useMemo, useState } from "react";
+import api from "../../../services/http";
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(email || "").trim());
@@ -10,13 +11,14 @@ export default function ContactSection({ business }) {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [company, setCompany] = useState(""); // honeypot anti bots
+  const [company, setCompany] = useState(""); // honeypot
 
   const [touched, setTouched] = useState({
     name: false,
     email: false,
     msg: false,
   });
+
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({
     state: "idle",
@@ -56,6 +58,7 @@ export default function ContactSection({ business }) {
   async function submit(e) {
     e.preventDefault();
 
+    // honeypot anti bots
     if (company.trim()) {
       setStatus({
         state: "success",
@@ -79,20 +82,14 @@ export default function ContactSection({ business }) {
     try {
       setStatus({ state: "sending", message: "Enviando…" });
 
-      const fd = new FormData();
-      fd.append("name", name.trim());
-      fd.append("email", email.trim());
-      fd.append("message", msg.trim());
-      fd.append("company", company.trim());
-
-      const res = await fetch("public_html/send-mail.php", {
-        method: "POST",
-        body: fd,
+      // 🔥 AHORA VA AL BACKEND
+      const { data } = await api.post("/contact", {
+        name: name.trim(),
+        email: email.trim(),
+        message: msg.trim(),
       });
 
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data?.ok) {
+      if (!data?.ok) {
         throw new Error(data?.message || "No se pudo enviar el mensaje.");
       }
 
@@ -111,6 +108,7 @@ export default function ContactSection({ business }) {
         email: false,
         msg: false,
       });
+
     } catch (err) {
       setStatus({
         state: "error",
@@ -134,11 +132,14 @@ export default function ContactSection({ business }) {
         </header>
 
         {status.state !== "idle" ? (
-          <div className={`ctcNotice ${status.state}`}>{status.message}</div>
+          <div className={`ctcNotice ${status.state}`}>
+            {status.message}
+          </div>
         ) : null}
 
         <div className="ctcGrid">
           <form className="ctcForm" onSubmit={submit} noValidate>
+
             {/* honeypot */}
             <div className="ctcHp">
               <label>
@@ -161,9 +162,9 @@ export default function ContactSection({ business }) {
                 onBlur={() => setTouched((t) => ({ ...t, name: true }))}
                 placeholder="Juan Pérez"
               />
-              {showErr("name") ? (
+              {showErr("name") && (
                 <small className="ctcErr">{errors.name}</small>
-              ) : null}
+              )}
             </label>
 
             <label className={`ctcField ${showErr("email") ? "hasError" : ""}`}>
@@ -175,9 +176,9 @@ export default function ContactSection({ business }) {
                 onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                 placeholder="juan@gmail.com"
               />
-              {showErr("email") ? (
+              {showErr("email") && (
                 <small className="ctcErr">{errors.email}</small>
-              ) : null}
+              )}
             </label>
 
             <label className={`ctcField ${showErr("msg") ? "hasError" : ""}`}>
@@ -188,9 +189,9 @@ export default function ContactSection({ business }) {
                 onBlur={() => setTouched((t) => ({ ...t, msg: true }))}
                 placeholder="Hola! Quería consultar por turnos..."
               />
-              {showErr("msg") ? (
+              {showErr("msg") && (
                 <small className="ctcErr">{errors.msg}</small>
-              ) : null}
+              )}
             </label>
 
             <button
@@ -198,7 +199,9 @@ export default function ContactSection({ business }) {
               className="ctcBtn"
               disabled={status.state === "sending"}
             >
-              {status.state === "sending" ? "Enviando…" : "Enviar mensaje"}
+              {status.state === "sending"
+                ? "Enviando…"
+                : "Enviar mensaje"}
             </button>
           </form>
 
@@ -211,7 +214,6 @@ export default function ContactSection({ business }) {
                 title="Mapa"
                 src={mapSrc}
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
           </div>

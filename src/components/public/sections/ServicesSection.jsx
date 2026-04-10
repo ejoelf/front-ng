@@ -69,9 +69,26 @@ export default function ServicesSection({ services }) {
         </div>
 
         <div className="svcActions">
-          <NavLink className="svcBtn" to="/reservar">
-            Reservar turno
-          </NavLink>
+          <div className="svcActionsCard">
+            <div className="svcActionsIntro">
+              <p className="svcActionsEyebrow">Turnos online</p>
+              <h3>Reservá o gestioná tu turno</h3>
+              <p className="svcActionsText">
+                Sacá un nuevo turno o administrá una reserva existente de forma
+                rápida y simple.
+              </p>
+            </div>
+
+            <div className="svcActionsButtons">
+              <NavLink className="svcBtn svcBtnPrimary" to="/reservar">
+                Reservar nuevo turno
+              </NavLink>
+
+              <NavLink to="/turno" className="svcBtn svcBtnSecondary">
+                Gestionar mi turno
+              </NavLink>
+            </div>
+          </div>
         </div>
       </div>
     </section>

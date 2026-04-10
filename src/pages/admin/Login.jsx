@@ -50,11 +50,22 @@ export default function Login() {
 
   return (
     <div className="loginWrap">
+      <div className="loginBgGlow loginBgGlowOne" />
+      <div className="loginBgGlow loginBgGlowTwo" />
+
       <form className="loginCard card" onSubmit={onSubmit}>
         <div className="loginTop">
-          <div>
-            <h2>Login</h2>
-            <p className="muted loginSub">Acceso interno para administración.</p>
+          <div className="loginBadge">Panel interno</div>
+
+          <div className="loginBrand">
+            <div className="loginLogo">NG</div>
+
+            <div className="loginHeadText">
+              <h2>Bienvenido</h2>
+              <p className="muted loginSub">
+                Ingresá al panel de administración de Peluquería NG.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -137,11 +148,12 @@ export default function Login() {
 
         <div className="loginActions">
           <Button type="submit" disabled={!canSubmit || loading}>
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? "Entrando..." : "Entrar al panel"}
           </Button>
 
-          <div className="loginFoot muted" style={{ lineHeight: 1.4 }}>
-            Las credenciales del panel se administran desde <b>Ajustes → Usuario</b>.
+          <div className="loginFoot muted">
+            Las credenciales del panel se administran desde{" "}
+            <b>Ajustes → Usuario</b>.
           </div>
         </div>
       </form>

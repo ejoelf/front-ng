@@ -8,20 +8,85 @@ import {
   labelPaymentMethod,
 } from "../../utils/labels";
 
+const BUSINESS_TZ = "America/Argentina/Cordoba";
+
+function getBusinessNowParts() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+
+  const parts = formatter.formatToParts(new Date());
+  const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+
+  return {
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hour: Number(map.hour),
+    minute: Number(map.minute),
+  };
+}
+
 function todayISO() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
+  const now = getBusinessNowParts();
+  const yyyy = String(now.year);
+  const mm = String(now.month).padStart(2, "0");
+  const dd = String(now.day).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function timeHHMMLocal(iso) {
+function timeHHMMBusiness(iso) {
   if (!iso) return "—";
+
   const d = new Date(iso);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
+  if (Number.isNaN(d.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("es-AR", {
+    timeZone: BUSINESS_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(d);
+}
+
+function dateISOInBusinessTZ(iso) {
+  if (!iso) return "";
+
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
+function minutesInBusinessTZ(iso) {
+  if (!iso) return -1;
+
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return -1;
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+
+  const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+  const hh = Number(map.hour || 0);
+  const mm = Number(map.minute || 0);
+
+  return hh * 60 + mm;
 }
 
 function sum(n) {
@@ -195,14 +260,23 @@ export default function Dashboard() {
   }, [appts]);
 
   const nextAppts = useMemo(() => {
-    const now = new Date();
     const todayStr = todayISO();
+    const nowParts = getBusinessNowParts();
+    const nowMinutes = nowParts.hour * 60 + nowParts.minute;
 
     const list = appts.filter((a) => a.status !== "cancelled");
 
     if (date !== todayStr) return list.slice(0, 6);
 
-    return list.filter((a) => new Date(a.endAt) >= now).slice(0, 6);
+    return list
+      .filter((a) => {
+        const apptDate = a.dateStr || dateISOInBusinessTZ(a.startAt);
+        if (apptDate !== todayStr) return false;
+
+        const apptEndMinutes = minutesInBusinessTZ(a.endAt);
+        return apptEndMinutes >= nowMinutes;
+      })
+      .slice(0, 6);
   }, [appts, date]);
 
   const cashPaid = useMemo(() => {
@@ -345,7 +419,7 @@ export default function Dashboard() {
                 <div key={a.id} className="dashItem">
                   <div className="dashItemLeft">
                     <div className="dashTime">
-                      {timeHHMMLocal(a.startAt)} – {timeHHMMLocal(a.endAt)}
+                      {timeHHMMBusiness(a.startAt)} – {timeHHMMBusiness(a.endAt)}
                     </div>
                     <div className="dashMain">
                       <strong>{a.serviceName}</strong> · {a.clientName}

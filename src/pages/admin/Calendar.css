@@ -1,4 +1,4 @@
-/* src/pages/Calendar/Calendar.css */
+/* src/pages/admin/Calendar.css */
 
 /* =========================
    HEADER + CONTROLES
@@ -42,6 +42,12 @@
   color-scheme: dark;
 }
 
+.calCtrl input:focus,
+.calCtrl select:focus {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
 .calCtrl select option {
   background: #0b0c10;
   color: var(--text);
@@ -62,15 +68,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-
-  /* tooltip position anchor */
   position: relative;
 }
 
 .calSection {
   padding: 14px;
-
-  /* ✅ tick height (set desde JSX por --tickPx) */
   --tickPx: 36px;
 }
 
@@ -92,14 +94,13 @@
 
 .calTimeline {
   display: grid;
-  grid-template-columns: 78px 1fr; /* col horas + contenido */
+  grid-template-columns: 78px 1fr;
   gap: 10px;
 }
 
-/* Columna horas */
 .calTimes {
   display: grid;
-  gap: 0; /* ✅ importante: nada de gaps */
+  gap: 0;
   padding-top: 2px;
   color: var(--muted);
   font-size: 12px;
@@ -111,7 +112,6 @@
   align-items: flex-start;
 }
 
-/* spacer para alinear horas con el header del staff cuando estás en "Todos" */
 .calLaneHeaderSpacer {
   height: 44px;
 }
@@ -120,7 +120,6 @@
    BLOQUES / GRILLA
    ========================= */
 
-/* Columna bloques (modo 1 staff) */
 .calBlocks {
   position: relative;
   border-left: 1px solid var(--border);
@@ -129,7 +128,6 @@
   overflow: hidden;
 }
 
-/* ✅ Grid: líneas cada viewStepMin => var(--tickPx) */
 .calGridBg {
   background: repeating-linear-gradient(
     to bottom,
@@ -140,7 +138,6 @@
   );
 }
 
-/* ✅ línea inferior extra para que no falte la última divisoria */
 .calBlocks::after {
   content: "";
   position: absolute;
@@ -154,7 +151,7 @@
 }
 
 /* =========================
-   LÍNEA HORA ACTUAL (ROJA)
+   LÍNEA HORA ACTUAL
    ========================= */
 
 .calNowLine {
@@ -194,10 +191,9 @@
 }
 
 /* =========================
-   SLOTS CLICKEABLES (ESPACIO LIBRE)
+   SLOTS CLICKEABLES
    ========================= */
 
-/* Capa transparente arriba del fondo, abajo de los turnos */
 .calSlotsLayer {
   position: absolute;
   left: 0;
@@ -205,7 +201,7 @@
   top: 0;
   bottom: 0;
   z-index: 3;
-  pointer-events: none; /* la capa en sí no recibe, los botones sí */
+  pointer-events: none;
 }
 
 .calSlot {
@@ -216,24 +212,21 @@
   background: transparent;
   padding: 0;
   cursor: pointer;
-
   pointer-events: auto;
   border-radius: 10px;
 }
 
-/* slot libre (hover sutil, como “Agenda Pro”) */
 .calSlot.free:hover {
   background: rgba(110, 231, 255, 0.06);
   outline: 1px dashed rgba(110, 231, 255, 0.18);
 }
 
-/* slot ocupado, no interactivo */
 .calSlot.busy {
   cursor: default;
 }
 
 /* =========================
-   MODO TODOS (una columna por staff)
+   MODO TODOS
    ========================= */
 
 .calBlocksMulti {
@@ -267,7 +260,6 @@
   padding: 10px 0;
 }
 
-/* ✅ línea inferior extra también en modo multi-columna */
 .calLaneBody::after {
   content: "";
   position: absolute;
@@ -288,7 +280,7 @@
 }
 
 /* =========================
-   TURNOS (BLOQUES)
+   TURNOS
    ========================= */
 
 .calBlock {
@@ -296,21 +288,24 @@
   padding: 8px 10px;
   border-radius: 14px;
   border: 1px solid rgba(110, 231, 255, 0.25);
-  background: rgba(110, 231, 255, 0.10);
+  background: rgba(110, 231, 255, 0.1);
   cursor: pointer;
   text-align: left;
   overflow: hidden;
   z-index: 5;
-
   display: flex;
   align-items: center;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .calBlock:hover {
   background: rgba(110, 231, 255, 0.14);
 }
 
-/* ✅ texto 1 sola línea: SERVICIO - NOMBRE - 00:00hs */
 .calBlockLine {
   width: 100%;
   font-weight: 900;
@@ -326,7 +321,6 @@
   color: var(--muted);
 }
 
-/* por si quedó algún estilo viejo */
 .calBlockTop,
 .calBlockBottom,
 .calPill,
@@ -335,14 +329,13 @@
   display: none !important;
 }
 
-/* ====== Estados ====== */
 .status-confirmed {
   border-color: rgba(110, 231, 255, 0.35);
   background: rgba(110, 231, 255, 0.12);
 }
 
 .status-rescheduled {
-  border-color: rgba(255, 184, 120, 0.40);
+  border-color: rgba(255, 184, 120, 0.4);
   background: rgba(255, 184, 120, 0.14);
 }
 
@@ -358,11 +351,10 @@
 }
 
 .status-completed {
-  border-color: rgba(106, 255, 167, 0.40);
+  border-color: rgba(106, 255, 167, 0.4);
   background: rgba(106, 255, 167, 0.14);
 }
 
-/* ====== Vacío ====== */
 .calEmpty {
   color: var(--muted);
   padding: 12px;
@@ -372,7 +364,7 @@
 }
 
 /* =========================
-   TOOLTIP (hover)
+   TOOLTIP
    ========================= */
 
 .calTip {
@@ -380,12 +372,10 @@
   z-index: 9999;
   width: 320px;
   max-width: calc(100vw - 20px);
-
-  background: rgba(10, 12, 16, 0.92);
+  background: rgba(10, 12, 16, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   padding: 10px 12px;
-
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(10px);
   pointer-events: none;
@@ -394,6 +384,7 @@
 .calTipTitle {
   font-weight: 900;
   margin-bottom: 6px;
+  line-height: 1.25;
 }
 
 .calTipRow {
@@ -407,11 +398,90 @@
 
 .calTipRow span {
   color: var(--muted);
+  min-width: 72px;
+  flex-shrink: 0;
 }
 
 /* =========================
    MODAL / ACCIONES
    ========================= */
+
+.apptModal {
+  display: grid;
+  gap: 10px;
+  position: relative;
+}
+
+.apptModalLoading > *:not(.apptLoadingOverlay) {
+  filter: blur(2px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.apptLoadingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 8, 12, 0.48);
+  border-radius: 18px;
+  backdrop-filter: blur(2px);
+}
+
+.apptLoadingBox {
+  min-width: 220px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(110, 231, 255, 0.18);
+  background: rgba(10, 12, 16, 0.92);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.apptLoadingSpinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.14);
+  border-top-color: rgba(110, 231, 255, 0.95);
+  animation: apptSpin 0.85s linear infinite;
+}
+
+.apptLoadingText {
+  color: var(--text);
+  font-weight: 800;
+  font-size: 14px;
+  text-align: center;
+}
+
+@keyframes apptSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.apptLine {
+  color: var(--text);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.hr {
+  border: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0 2px;
+}
+
+.apptPay,
+.apptReschedule,
+.newAppt {
+  display: grid;
+  gap: 10px;
+}
 
 .apptActions {
   display: flex;
@@ -437,7 +507,52 @@
 }
 
 /* =========================
-   SLOTS (reprogramar)
+   CAMPOS / SELECTFIELD
+   ========================= */
+
+.selectField {
+  display: grid;
+  gap: 6px;
+}
+
+.selectField .label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.selectField input,
+.selectField select,
+.selectField textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+  color-scheme: dark;
+}
+
+.selectField input:focus,
+.selectField select:focus,
+.selectField textarea:focus {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
+.selectField textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.selectField .hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* =========================
+   SLOTS REPROGRAMAR
    ========================= */
 
 .slotGrid {
@@ -463,6 +578,11 @@
 .slotBtn.active {
   border-color: rgba(110, 231, 255, 0.35);
   background: rgba(110, 231, 255, 0.12);
+}
+
+.slotBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .slotEmpty {
@@ -501,7 +621,6 @@
   height: 18px;
 }
 
-/* autocomplete */
 .newApptSuggestLabel {
   color: var(--muted);
   font-size: 12px;
@@ -522,13 +641,17 @@
   outline: none;
 }
 
+.newApptSuggestInput:focus {
+  border-color: rgba(110, 231, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
 .newApptSuggestList {
   position: absolute;
   left: 0;
   right: 0;
   top: calc(100% + 8px);
   z-index: 20;
-
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -561,36 +684,15 @@
   color: var(--muted);
 }
 
-/* textarea del modal */
-.selectField textarea {
-  width: 100%;
-  min-height: 88px;
-  resize: vertical;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-  outline: none;
-}
-
 /* =========================
-   SELECT oscuro (modal Cobrar y Nuevo turno)
+   SELECT OSCURO
    ========================= */
 
 .selectField select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.25);
-  color: var(--text);
-  outline: none;
-
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
   background-image:
     linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
@@ -600,11 +702,6 @@
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   padding-right: 34px;
-}
-
-.selectField select:focus {
-  border-color: rgba(110, 231, 255, 0.35);
-  box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
 }
 
 .selectField select:disabled {
@@ -618,7 +715,6 @@
   color: var(--text);
 }
 
-/* Si tu sistema usa también .calCtrl select en otros lados */
 .calCtrl select {
   appearance: none;
   -webkit-appearance: none;
@@ -646,8 +742,41 @@
     grid-template-columns: 1fr;
   }
 
-  /* si en mobile se te hace muy apretado, permitimos scroll */
   .calBlocksMulti {
     overflow-x: auto;
   }
+}
+
+/* =========================
+   HIGHLIGHT PRO
+   ========================= */
+
+.calBlock.highlight {
+  z-index: 20;
+  animation: iphonePop 0.4s ease;
+  box-shadow: 0 0 0 2px #22c55e, 0 10px 30px rgba(34, 197, 94, 0.4);
+}
+
+@keyframes iphonePop {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.calBlock.focusMode {
+  transform: scale(1.03);
+}
+
+.calHighlightActive .calBlock.fade {
+  opacity: 0.25;
+  filter: blur(1px);
+  transition: all 0.3s ease;
 }

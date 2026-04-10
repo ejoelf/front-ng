@@ -8,6 +8,7 @@ import PublicOnlyRoute from "./PublicOnlyRoute";
 
 import Home from "../pages/public/Home";
 import Booking from "../pages/public/Booking";
+import ManageAppointment from "../pages/public/ManageAppointment"; // 🔥 NUEVO
 
 import Login from "../pages/admin/Login";
 import Dashboard from "../pages/admin/Dashboard";
@@ -27,6 +28,9 @@ export default function AppRouter() {
       <Route element={<PublicLayout />}>
         <Route index element={<Home />} />
         <Route path="reservar" element={<Booking />} />
+
+        {/* 🔥 NUEVA RUTA */}
+        <Route path="turno" element={<ManageAppointment />} />
       </Route>
 
       {/* ================= ADMIN LOGIN ================= */}

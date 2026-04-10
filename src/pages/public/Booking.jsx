@@ -1,6 +1,6 @@
 import "./Booking.css";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -493,6 +493,7 @@ export default function Booking() {
             </Button>
           </div>
         </form>
+        
       </div>
     </section>
   );

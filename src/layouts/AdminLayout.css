@@ -12,7 +12,7 @@
   border-right: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.02);
   backdrop-filter: blur(10px);
-  overflow: hidden;
+  overflow: visible;
   transition: width 220ms ease, transform 220ms ease;
   display: flex;
   flex-direction: column;
@@ -40,16 +40,16 @@
 
 /* colapsar */
 .adminCollapseBtn{
+  font-size: 26px;
   height: 36px;
   width: 36px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
+  border: none;
+  background: rgba(255,255,255,0.0);
   color: var(--text);
   cursor: pointer;
   flex: 0 0 auto;
 }
-.adminCollapseBtn:hover{ background: rgba(255,255,255,0.06); }
 
 /* ===== Nav ===== */
 .adminNav{
@@ -189,4 +189,196 @@
 
   /* en mobile ignoramos colapsado mini */
   .adminShell.isCollapsed{ grid-template-columns: 1fr; }
+}
+
+
+/* DROPDOWN */
+.notifDropdown {
+  position: absolute;
+  top: 40px;
+  right: auto;
+  left: calc(100% + 10px);
+
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+
+  background: rgb(20,20,20,0.95);
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+
+  padding: 10px;
+  z-index: 999;
+
+  box-shadow: 0 20px 40px rgba(0,0,0,0.9);
+}
+
+/* ITEM */
+.notifItem {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notifItem:hover {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.notifItem strong {
+  display: block;
+  font-size: 13px;
+}
+
+.notifItem p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* TIPOS */
+.notif-new {
+  border-left: 3px solid #22c55e;
+}
+
+.notif-rescheduled {
+  border-left: 3px solid #eab308;
+}
+
+.notif-cancelled {
+  border-left: 3px solid #ef4444;
+}
+
+.notif-contact {
+  border-left: 3px solid #4e5c76;
+}
+
+/* EMPTY */
+.notifEmpty {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ===== MODAL ===== */
+
+.notifModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifModal {
+  width: 500px;
+  max-height: 80vh;
+  overflow: hidden;
+
+  background: rgba(20,20,20,0.95);
+  backdrop-filter: blur(12px);
+
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+
+  padding: 20px;
+}
+
+.notifModal h2 {
+  margin-bottom: 12px;
+}
+
+.notifModalList {
+  max-height: 60vh;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.03);
+}
+
+.notifCloseBtn {
+  margin-top: 12px;
+
+  width: 100%;
+  padding: 10px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+
+  cursor: pointer;
+}
+
+.notifCloseBtn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* ===== COLAPSADO ===== */
+
+.adminShell.isCollapsed .adminNotificationBell {
+  justify-content: center;
+}
+
+.adminShell.isCollapsed .notifDropdown {
+  left: 70px;
+}
+
+/* ===== HEADER ACTIONS (🔔 + FLECHA) ===== */
+.adminBrandActions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* 🔔 */
+.adminNotificationWrapper {
+  position: relative;
+}
+
+.adminNotificationBell {
+  font-size: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  position: relative;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.adminNotificationBell:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* BADGE */
+.notifBadge {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: #ef4444;
+  color: white;
+  border-radius: 999px;
+  font-size: 10px;
+  padding: 2px 5px;
+}
+
+/* FIX COLAPSADO */
+.adminShell.isCollapsed .adminBrandLeft {
+  display: none;
+}
+
+.adminShell.isCollapsed .notifDropdown {
+  right: -260px;
+  top: 0;
+}
+
+.notifItem.read {
+  opacity: 0.5;
 }
