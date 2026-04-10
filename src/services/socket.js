@@ -12,8 +12,10 @@ export const socket = io(SOCKET_URL, {
 
 socket.on("connect", () => {
   console.log("🟢 Socket conectado:", socket.id);
+  
 });
 
 socket.on("disconnect", () => {
   console.log("🔴 Socket desconectado");
+
 });

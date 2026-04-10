@@ -70,8 +70,11 @@ export default function ManageAppointment() {
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [submittingReschedule, setSubmittingReschedule] = useState(false);
+  const [submittingCancel, setSubmittingCancel] = useState(false);
 
   const [highlight, setHighlight] = useState(false);
+  const [successState, setSuccessState] = useState(null);
 
   const [modal, setModal] = useState(null);
 
@@ -85,11 +88,16 @@ export default function ManageAppointment() {
     audioRef.current?.play().catch(() => {});
   }
 
+  function resetSuccessState() {
+    setSuccessState(null);
+  }
+
   async function loadAppointmentByCode(targetCode) {
     if (!targetCode) return;
 
     try {
       setLoading(true);
+      resetSuccessState();
 
       const { data } = await api.get(`/appointments/by-code/${targetCode}`);
       const nextAppointment = data?.appointment || null;
@@ -124,6 +132,7 @@ export default function ManageAppointment() {
     (async () => {
       try {
         setLoading(true);
+        resetSuccessState();
 
         const { data } = await api.get(`/appointments/by-code/${code}`);
 
@@ -174,7 +183,10 @@ export default function ManageAppointment() {
             (s) => String(s.id) === String(appointment.serviceId)
           );
 
-          if (Array.isArray(service?.allowedStaff) && service.allowedStaff.length > 0) {
+          if (
+            Array.isArray(service?.allowedStaff) &&
+            service.allowedStaff.length > 0
+          ) {
             const allowedIds = service.allowedStaff.map((s) =>
               typeof s === "object" ? String(s.id) : String(s)
             );
@@ -320,19 +332,33 @@ export default function ManageAppointment() {
   }, [mode, appointment, rescheduleDate, rescheduleStaffId]);
 
   async function handleCancel() {
+    if (submittingCancel) return;
+
     try {
+      setSubmittingCancel(true);
+
       await api.post("/appointments/cancel-by-code", {
         code: code || appointment?.confirmationCode,
       });
 
-      setAppointment((prev) =>
-        prev ? { ...prev, status: "cancelled" } : prev
-      );
+      const cancelledAppointment = appointment
+        ? { ...appointment, status: "cancelled" }
+        : appointment;
+
+      setAppointment(cancelledAppointment);
+      setMode("view");
+      setModal(null);
+      setSuccessState({
+        type: "cancelled",
+        appointment: cancelledAppointment,
+      });
 
       playSound();
       toast.success("Turno cancelado.");
     } catch (e) {
       toast.error(e?.response?.data?.error?.message || "Error cancelando.");
+    } finally {
+      setSubmittingCancel(false);
     }
   }
 
@@ -342,14 +368,25 @@ export default function ManageAppointment() {
       return;
     }
 
+    if (submittingReschedule) return;
+
     try {
+      setSubmittingReschedule(true);
+
       const { data } = await api.post("/appointments/reschedule-by-code", {
         code: code || appointment?.confirmationCode,
         newStartAtISO: selectedSlot.startAt,
         newStaffId: rescheduleStaffId,
       });
 
-      const updatedAppointment = data?.appointment || null;
+      let updatedAppointment = data?.appointment || null;
+
+      if (!updatedAppointment && appointment?.confirmationCode) {
+        const refreshed = await api.get(
+          `/appointments/by-code/${appointment.confirmationCode}`
+        );
+        updatedAppointment = refreshed?.data?.appointment || null;
+      }
 
       if (updatedAppointment) {
         setAppointment(updatedAppointment);
@@ -357,8 +394,6 @@ export default function ManageAppointment() {
           updatedAppointment?.dateStr || toISODate(updatedAppointment?.startAt)
         );
         setRescheduleStaffId(updatedAppointment?.staffId || "");
-      } else if (appointment?.confirmationCode) {
-        await loadAppointmentByCode(appointment.confirmationCode);
       }
 
       setMode("view");
@@ -368,12 +403,19 @@ export default function ManageAppointment() {
       setHighlight(true);
       setTimeout(() => setHighlight(false), 2000);
 
+      setSuccessState({
+        type: "rescheduled",
+        appointment: updatedAppointment || appointment,
+      });
+
       playSound();
       toast.success("Turno reprogramado.");
     } catch (e) {
       toast.error(
         e?.response?.data?.error?.message || "No se pudo reprogramar."
       );
+    } finally {
+      setSubmittingReschedule(false);
     }
   }
 
@@ -411,6 +453,9 @@ export default function ManageAppointment() {
     setRescheduleDate("");
     setRescheduleStaffId("");
     setStaffOptions([]);
+    setSubmittingReschedule(false);
+    setSubmittingCancel(false);
+    resetSuccessState();
   }
 
   function Modal() {
@@ -419,7 +464,13 @@ export default function ManageAppointment() {
     return (
       <div className="modalOverlay">
         <div className="modalBox">
-          <button className="modalClose" onClick={() => setModal(null)}>
+          <button
+            className="modalClose"
+            onClick={() => {
+              if (submittingCancel) return;
+              setModal(null);
+            }}
+          >
             ✕
           </button>
 
@@ -431,15 +482,18 @@ export default function ManageAppointment() {
               <div className="modalActions">
                 <Button
                   variant="danger"
-                  onClick={async () => {
-                    await handleCancel();
-                    setModal(null);
-                  }}
+                  onClick={handleCancel}
+                  disabled={submittingCancel}
                 >
-                  Sí, cancelar
+                  {submittingCancel ? "Cancelando..." : "Sí, cancelar"}
                 </Button>
 
-                <Button onClick={() => setModal(null)}>Volver</Button>
+                <Button
+                  onClick={() => setModal(null)}
+                  disabled={submittingCancel}
+                >
+                  Volver
+                </Button>
               </div>
             </>
           )}
@@ -481,7 +535,9 @@ export default function ManageAppointment() {
               />
 
               <div className="modalActions">
-                <Button onClick={handleSearchByManualCode}>Buscar por código</Button>
+                <Button onClick={handleSearchByManualCode}>
+                  Buscar por código
+                </Button>
                 <Button variant="ghost" onClick={() => setModal(null)}>
                   Cerrar
                 </Button>
@@ -505,8 +561,6 @@ export default function ManageAppointment() {
                 querés hacer.
               </p>
             </div>
-
-            
           </div>
 
           <input
@@ -522,7 +576,11 @@ export default function ManageAppointment() {
           />
 
           <div className="manageSearchActions">
-            <Button onClick={handleSearch} className="searchBtn" disabled={loading}>
+            <Button
+              onClick={handleSearch}
+              className="searchBtn"
+              disabled={loading}
+            >
               {loading ? "Buscando..." : "Buscar turno"}
             </Button>
 
@@ -595,6 +653,110 @@ export default function ManageAppointment() {
 
           <div className="manageActions">
             <Button onClick={resetToSearch}>Buscar otro turno</Button>
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              Volver al inicio
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (successState?.type === "cancelled") {
+    const appt = successState.appointment || appointment;
+
+    return (
+      <section className="managePage">
+        <div className="manageCard highlightCard">
+          <div className="manageTopBar">
+            <div>
+              <h2>Turno cancelado</h2>
+              <p className="manageTopHint">
+                Lamentamos que hayas cancelado tu reserva. Ya enviamos la
+                confirmación correspondiente y esperamos verte pronto.
+              </p>
+            </div>
+
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              Volver
+            </Button>
+          </div>
+
+          <div className="manageInfo">
+            <p>
+              <strong>Servicio:</strong> {appt?.serviceName}
+            </p>
+            <p>
+              <strong>Profesional:</strong> {appt?.staffName}
+            </p>
+            <p>
+              <strong>Fecha original:</strong> {formatDateDMY(appt?.startAt)}
+            </p>
+            <p>
+              <strong>Hora original:</strong> {formatTimeHHMM(appt?.startAt)}
+            </p>
+            <p>
+              <strong>Cliente:</strong> {appt?.clientName}
+            </p>
+            <p>
+              <strong>Estado:</strong> Cancelado
+            </p>
+          </div>
+
+          <div className="manageActions">
+            <Button onClick={resetToSearch}>Buscar otro turno</Button>
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              Volver al inicio
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (successState?.type === "rescheduled") {
+    const appt = successState.appointment || appointment;
+
+    return (
+      <section className="managePage">
+        <div className="manageCard highlightCard">
+          <div className="manageTopBar">
+            <div>
+              <h2>Turno reprogramado</h2>
+              <p className="manageTopHint">
+                Tu turno fue reprogramado correctamente. También te enviamos la
+                confirmación por email para que tengas el nuevo detalle a mano.
+              </p>
+            </div>
+
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              Volver
+            </Button>
+          </div>
+
+          <div className="manageInfo">
+            <p>
+              <strong>Servicio:</strong> {appt?.serviceName}
+            </p>
+            <p>
+              <strong>Profesional:</strong> {appt?.staffName}
+            </p>
+            <p>
+              <strong>Nueva fecha:</strong> {formatDateDMY(appt?.startAt)}
+            </p>
+            <p>
+              <strong>Nueva hora:</strong> {formatTimeHHMM(appt?.startAt)}
+            </p>
+            <p>
+              <strong>Cliente:</strong> {appt?.clientName}
+            </p>
+            <p>
+              <strong>Código:</strong> {appt?.confirmationCode || "—"}
+            </p>
+          </div>
+
+          <div className="manageActions">
+            <Button onClick={resetToSearch}>Gestionar otro turno</Button>
             <Button variant="ghost" onClick={() => navigate("/")}>
               Volver al inicio
             </Button>
@@ -688,7 +850,11 @@ export default function ManageAppointment() {
                     setRescheduleStaffId(e.target.value);
                     setSelectedSlot(null);
                   }}
-                  disabled={loadingStaff || staffOptions.length === 0}
+                  disabled={
+                    loadingStaff ||
+                    staffOptions.length === 0 ||
+                    submittingReschedule
+                  }
                 >
                   {loadingStaff ? (
                     <option value="">Cargando profesionales...</option>
@@ -714,20 +880,31 @@ export default function ManageAppointment() {
                     setRescheduleDate(e.target.value);
                     setSelectedSlot(null);
                   }}
+                  disabled={submittingReschedule}
                 />
               </label>
             </div>
 
             <div className="manageActions">
-              <Button variant="ghost" onClick={() => setMode("view")}>
+              <Button
+                variant="ghost"
+                onClick={() => setMode("view")}
+                disabled={submittingReschedule}
+              >
                 Volver
               </Button>
 
               <Button
                 onClick={handleReschedule}
-                disabled={!selectedSlot || !rescheduleStaffId}
+                disabled={
+                  !selectedSlot ||
+                  !rescheduleStaffId ||
+                  submittingReschedule
+                }
               >
-                Confirmar reprogramación
+                {submittingReschedule
+                  ? "Reprogramando..."
+                  : "Confirmar reprogramación"}
               </Button>
             </div>
 
@@ -747,7 +924,11 @@ export default function ManageAppointment() {
                     className={`slot ${
                       selectedSlot?.startAt === sl.startAt ? "active" : ""
                     }`}
-                    onClick={() => setSelectedSlot(sl)}
+                    onClick={() => {
+                      if (submittingReschedule) return;
+                      setSelectedSlot(sl);
+                    }}
+                    disabled={submittingReschedule}
                   >
                     {sl.label || formatTimeHHMM(sl.startAt)}
                   </button>

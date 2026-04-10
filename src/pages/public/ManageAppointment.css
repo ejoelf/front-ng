@@ -20,6 +20,7 @@
     0 24px 64px rgba(0, 0, 0, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(8px);
+  position: relative;
 }
 
 .manageCard h2 {
@@ -41,6 +42,64 @@
   box-shadow:
     0 0 0 3px rgba(110, 231, 255, 0.08),
     0 24px 64px rgba(0, 0, 0, 0.34);
+}
+
+.manageCard.isProcessing {
+  pointer-events: none;
+}
+
+.manageCard.isProcessing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: rgba(5, 8, 14, 0.38);
+  backdrop-filter: blur(4px);
+  z-index: 3;
+}
+
+.manageLoadingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.manageLoadingBox {
+  min-width: min(320px, 100%);
+  padding: 22px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(110, 231, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(15, 20, 30, 0.96), rgba(8, 10, 16, 0.96));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+  text-align: center;
+}
+
+.manageLoadingSpinner {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(110, 231, 255, 0.95);
+  animation: manageSpin 0.8s linear infinite;
+}
+
+.manageLoadingTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.manageLoadingText {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 /* =========================
@@ -85,7 +144,8 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .manageCard input:focus,
@@ -93,6 +153,12 @@
   border-color: rgba(110, 231, 255, 0.35);
   box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
   background: rgba(255, 255, 255, 0.045);
+}
+
+.manageCard input:disabled,
+.manageCard select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .manageCard select {
@@ -193,6 +259,63 @@
 }
 
 /* =========================
+   SUCCESS STATE
+   ========================= */
+
+.manageSuccessCard {
+  margin-top: 18px;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(110, 231, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+}
+
+.manageSuccessBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 231, 255, 0.18);
+  background: rgba(110, 231, 255, 0.1);
+  color: #d9fbff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.manageSuccessBadge.isCancel {
+  border-color: rgba(255, 107, 107, 0.22);
+  background: rgba(255, 107, 107, 0.1);
+  color: #ffd7d7;
+}
+
+.manageSuccessTitle {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.manageSuccessText {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.manageSuccessActions {
+  margin-top: 22px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* =========================
    LIST
    ========================= */
 
@@ -255,7 +378,8 @@
     background 0.2s ease,
     border-color 0.2s ease,
     transform 0.15s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .manageSlots .slot:hover {
@@ -268,6 +392,12 @@
   border-color: rgba(110, 231, 255, 0.45);
   background: rgba(110, 231, 255, 0.14);
   box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.12);
+}
+
+.manageSlots .slot:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* =========================
@@ -351,13 +481,20 @@
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
-    transform 0.15s ease;
+    transform 0.15s ease,
+    opacity 0.2s ease;
 }
 
 .modalClose:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.14);
   transform: translateY(-1px);
+}
+
+.modalClose:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* =========================
@@ -384,6 +521,15 @@
   }
 }
 
+@keyframes manageSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* =========================
    RESPONSIVE
    ========================= */
@@ -395,6 +541,10 @@
 
   .manageCard {
     padding: 20px 16px 22px;
+    border-radius: 22px;
+  }
+
+  .manageCard.isProcessing::after {
     border-radius: 22px;
   }
 
@@ -411,7 +561,8 @@
     font-size: 15px;
   }
 
-  .manageInfo {
+  .manageInfo,
+  .manageSuccessCard {
     padding: 18px;
     border-radius: 18px;
   }
@@ -429,11 +580,16 @@
     align-items: stretch;
   }
 
-  .modalActions {
+  .modalActions,
+  .manageSuccessActions {
     flex-direction: column;
   }
 
   .manageDateField {
+    min-width: 100%;
+  }
+
+  .manageLoadingBox {
     min-width: 100%;
   }
 }
